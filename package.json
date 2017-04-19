@@ -1,0 +1,33 @@
+{
+  "name": "mg-api-js",
+  "version": "1.0.0",
+  "description": "An MyGeotab API wrapper for clientside javascript",
+  "main": "dist/api.min.js",
+  "readmeFilename": "README.md",
+  "author": {
+    "name": "Geotab Inc",
+    "email": "support@geotab.com"
+  },
+  "repository": {
+    "url": "https://github.com/Geotab/mg-api-js",
+    "type": "git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-conventional-changelog": "^6.1.0",
+    "grunt-groc": "^0.7.1",
+    "grunt-standard": "2.0.0",
+    "grunt-umd": "^2.3.0",
+    "load-grunt-config": "^0.19.2",
+    "time-grunt": "^1.4.0"
+  }
+}
