@@ -1,12 +1,12 @@
 /*! mg-api-js - v1.0.0
- *  Release on: 2017-04-19
+ *  Release on: 2017-05-09
  *  Copyright (c) 2017 Geotab Inc
  *  Licensed MIT */
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module unless amdModuleId is set
     define([], function () {
-      return (factory());
+      return (root['GeotabApi'] = factory());
     });
   } else if (typeof module === 'object' && module.exports) {
     // Node. Does not work with strict CommonJS, but
@@ -14,43 +14,42 @@
     // like Node.
     module.exports = factory();
   } else {
-    factory();
+    root['GeotabApi'] = factory();
   }
 }(this, function () {
 
+/* eslint-env browser */
 /**
- *  @version 2014-07-21
- *  @description The Geotab JS API library.
- *  Used to login and make any API calls to a Geotab server.
- *
- *  Automatically prompts the user to login if the password is changed or if the
- *  database is moved to another server.
- *
- *  If credentials are required (for example, the first time you've visited the page, the
- *  database has moved or the user's password has changed, etc.), the "getCredentialsCallback" is executed
- *  with a callback function that can be used on your end to pass credentials into the system. When
- *  you call this function, any pending calls will also be completed automatically.
+*  @version 2014-07-21
+*  @description The Geotab JS API library.
+*  Used to login and make any API calls to a Geotab server.
+*
+*  Automatically prompts the user to login if the password is changed or if the
+*  database is moved to another server.
+*
+*  If credentials are required (for example, the first time you've visited the page, the
+*  database has moved or the user's password has changed, etc.), the "getCredentialsCallback" is executed
+*  with a callback function that can be used on your end to pass credentials into the system. When
+*  you call this function, any pending calls will also be completed automatically.
 
- *  @example
- *  var api = GeotabApi(function(authenticateCallback) {
- *      // We need credentials; we either never had them, or lost them (the server was moved, password
- *      // changed, etc.)
- *
- *      someLoginDialog.style.display = "block" // Show a login dialog
- *      someLoginButton.addEventListener("click", function () {
- *          // Call to authenticate
- *          authenticateCallback(serverField.value, databaseField.value, emailField.value, passwordField.value, function(errorString) {
- *              alert(errorString)
- *          })
- *      })
- *  })
- *  @function
- *  @param {Function} getCredentialsCallback This function is called when this class can't login or is
- *                                      fetching credentials for the first time
- *  @param {Object} [newOptions] Can be used to override default values in the "options" variable
- *  @param {Object} [customCredentialStore] Override the default localStorage-based credential storage
- with a custom storage implementation
- */
+*  @example
+*  var api = GeotabApi(function(authenticateCallback) {
+*      // We need credentials; we either never had them, or lost them (the server was moved, password
+*      // changed, etc.)
+*
+*      someLoginDialog.style.display = "block" // Show a login dialog
+*      someLoginButton.addEventListener("click", function () {
+*          // Call to authenticate
+*          authenticateCallback(serverField.value, databaseField.value, emailField.value, passwordField.value, function(errorString) {
+*              alert(errorString)
+*          })
+*      })
+*  })
+*  @function
+*  @param {Function} getCredentialsCallback This function is called when this class can't login or is fetching credentials for the first time
+*  @param {Object} [newOptions] Can be used to override default values in the "options" variable
+*  @param {Object} [customCredentialStore] Override the default localStorage-based credential storage with a custom storage implementation
+*/
 var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialStore) {
   'use strict'
   var JSONP_REQUESTS_PROPERTY_STR = 'geotabJSONP',
@@ -91,8 +90,7 @@ var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialSt
       var errorString
       if (error && error.name && error.message) {
         errorString = error.name + ': ' + error.message
-      }
-      else if (error.target || (error instanceof XMLHttpRequest && error.status === 0)) {
+      } else if (error.target || (error instanceof XMLHttpRequest && error.status === 0)) {
         errorString = "Network Error: Couldn't connect to the server. Please check your network connection and try again."
       }
       if (options.debug) {
@@ -154,7 +152,7 @@ var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialSt
         },
         timeoutTimer
 
-      window[JSONP_REQUESTS_PROPERTY_STR][uid] = function JSONPResponse (data) {
+      window[JSONP_REQUESTS_PROPERTY_STR][uid] = function JSONPResponse(data) {
         // Clear timeout timer first
         if (timeoutTimer) {
           clearTimeout(timeoutTimer)
@@ -173,8 +171,7 @@ var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialSt
               callbackSuccess(result)
             }
           }
-        }
-        finally {
+        } finally {
           cleanupCall(uid)
         }
       }
@@ -184,12 +181,11 @@ var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialSt
         s.id = uid
         s.async = 'async'
         s.src = getCallUrl(method) + '?JSONP=' + JSONP_REQUESTS_PROPERTY_STR + '.' + uid + buildParamString()
-        s.onerror = function JSONPError (error) {
+        s.onerror = function JSONPError(error) {
           try {
             debugLog('CallJSONP', method, 'ERROR', error)
             handleError(error, callbackError)
-          }
-          finally {
+          } finally {
             cleanupCall(uid)
           }
         }
@@ -218,8 +214,8 @@ var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialSt
       return {
         abort: function () {
           cleanupCall(uid)
-          if (errorCallback) {
-            errorCallback('Cancelled', {})
+          if (callbackError) {
+            callbackError('Cancelled', {})
           }
         }
       }
@@ -382,7 +378,7 @@ var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialSt
       }
       if (!credentials) {
         needsLoginAndCall()
-        return { abort: function () {} }
+        return { abort: function () { } }
       }
       params.credentials = credentials
       return callBase(method, params, callbackSuccess, function (errorString, errorObject) {
@@ -528,26 +524,6 @@ var GeotabApi = function (getCredentialsCallback, newOptions, customCredentialSt
   }
 }
 
-if (typeof define !== 'undefined' && define.amd) {
-  // AMD. Register as an anonymous module.
-  define(function () {
-    'use strict'
-    return GeotabApi
-  })
-}
-
-// JSDoc Addenda
-/**
- * This callback is called when a web request is successful
- * @callback successCallback
- * @param {*} [response] The response array or object
- */
-/**
- * This callback is called when a web request is successful
- * @callback failureCallback
- * @param {String} errorString The human-readable error string
- * @param {Object} errorObject The error object (could be a JS Error object, JS Event object, XMLHttpRequest object, or MyGeotab error object)
- */
-
+return GeotabApi;
 
 }));

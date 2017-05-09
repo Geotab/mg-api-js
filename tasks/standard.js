@@ -1,8 +1,5 @@
 module.exports = {
-  options: {
-    format: true
-  },
-  code: {
+  app: {
     src: [
       '{,lib/,tasks/}*.js'
     ]

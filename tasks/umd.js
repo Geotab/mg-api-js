@@ -4,7 +4,8 @@ module.exports = {
     indent: '  ',
     src: 'lib/api.js',
     dest: 'dist/api.js',
-    returnExportsGlobal: '<%= name %>',
+    objectToExport: 'GeotabApi',
+    globalAlias: 'GeotabApi',
     deps: {
       default: [],
       amd: [],
