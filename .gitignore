@@ -1,5 +1,6 @@
 node_modules
 test/temp
+test/credentials.js
 tmp
 docs
 .DS_Store

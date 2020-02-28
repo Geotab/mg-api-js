@@ -8,6 +8,12 @@
     "name": "Geotab Inc",
     "email": "support@geotab.com"
   },
+  "scripts": {
+    "mocha": "mocha test/**/*.js",
+    "build": "webpack --mode=production --config webpack.production.js",
+    "serve": "http-server ./ -p 9000 --cors -s",
+    "test": "npm run build && start-server-and-test serve http://127.0.0.1:9000 mocha"
+  },
   "repository": {
     "url": "https://github.com/Geotab/mg-api-js",
     "type": "git"
@@ -17,6 +23,14 @@
     "node": ">= 0.10.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "@babel/preset-env": "^7.8.6",
+    "axios": "^0.19.2",
+    "babel": "^6.23.0",
+    "babel-loader": "^8.0.6",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-loader": "^3.0.3",
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
@@ -27,7 +41,19 @@
     "grunt-groc": "^0.7.1",
     "grunt-standard": "3.1.0",
     "grunt-umd": "^2.3.0",
+    "http-server": "^0.12.1",
     "load-grunt-config": "^0.19.2",
-    "time-grunt": "^1.4.0"
+    "mocha": "^7.1.0",
+    "puppeteer": "^2.1.1",
+    "start-server-and-test": "^1.10.8",
+    "time-grunt": "^1.4.0",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11",
+    "webpack-merge": "^4.2.2"
+  },
+  "mocha": {
+    "timeout": 11000,
+    "reporter": "spec"
   }
 }
