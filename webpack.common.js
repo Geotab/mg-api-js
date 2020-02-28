@@ -6,6 +6,11 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'api.js',
         library: 'GeotabApi',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd',
+        globalObject: 'typeof self !== "undefined" ? self : this'
+    },
+    target: 'node',
+    node: {
+        fs: 'empty'
     }
 }
