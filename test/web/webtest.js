@@ -17,10 +17,13 @@ const rpcResponse = (response, err) => {
     };
 };
 
+const jsonify = (string, delimiter) => {
+
+}
 // puppeteer options
 const opts = {
     devtools: true, // Opens browser dev tools when headless is false
-    headless: true,
+    headless: false,
     slowMo: 0,
     timeout: 10000
 };
@@ -59,48 +62,78 @@ describe('User opens webpage', () => {
         // Setup mocks
         await page.on('request', request => {
             if (request.url().includes(`https://${mocks.server}/apiv1`)) {
-                let rpcBody = rpcRequest(request.postData());
+                // Post requests are normal xhr/call methods
                 let payload = '';
-                switch (rpcBody.method) {
-                    case 'Authenticate':
-                        payload = mocks.credentials;
-                        break;
-                    case 'Get':
-                        switch (rpcBody.params.typeName) {
-                            case 'Device':
-                                payload = [mocks.device];
-                                break;
-                            case 'User':
-                                payload = [mocks.user];
-                                break;
-                        }
-                        break;
-                    case 'ExecuteMultiCall':
-                        // Looping each of the calls
-                        rpcBody.params.calls.forEach( call => {
-                            switch(call.method){
-                                case 'GetCountOf':
-                                    switch (call.params.typeName) {
-                                        case 'User':
-                                            payload = [1000];
-                                            break;
-                                        case 'Device':
-                                            payload = [1001];
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                break;
+                if(request.method() === 'POST'){
+                    let rpcBody = rpcRequest(request.postData());
+                    switch (rpcBody.method) {
+                        case 'Authenticate':
+                            payload = mocks.credentials;
+                            break;
+                        case 'Get':
+                            switch (rpcBody.params.typeName) {
+                                case 'Device':
+                                    payload = [mocks.device];
+                                    break;
+                                case 'User':
+                                    payload = [mocks.user];
+                                    break;
                             }
-                        })
-                        break;
+                            break;
+                        case 'ExecuteMultiCall':
+                            // Looping each of the calls
+                            rpcBody.params.calls.forEach( call => {
+                                switch(call.method){
+                                    case 'GetCountOf':
+                                        switch (call.params.typeName) {
+                                            case 'User':
+                                                payload = [1000];
+                                                break;
+                                            case 'Device':
+                                                payload = [1001];
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    break;
+                                }
+                            })
+                            break;
+                        }
+                    request.respond({
+                        content: 'application/json',
+                        headers: { 'Access-Control-Allow-Origin': '*' },
+                        body: JSON.stringify(rpcResponse(payload))
+                    }); 
+                } else {
+                    // Request looks something like...
+                    // https://www.myaddin.com/apiv1/Authenticate?JSONP=geotabJSONP.json14328697799013979&database=%22testDB%22&userName=%22testUser%40test.com%22&password=%22...%22
+                    let url = request.url();
+                    let splitUrl = url.split('?');
+                    let method = splitUrl[0];
+                    // callback matches window scope function passed in by user
+                    let callback = splitUrl[1].match(/geotabJSONP\.json[\d]+/)[0];
+                    let params = splitUrl[1].split(/geotabJSONP\.json[\d]+/)[1];
+                    let cred = mocks.credentials.credentials;
+                    // JSONP expects executeable javascript to be returned
+                    let response = `${callback}({"result": {"credentials":{`;
+
+                    let len = cred.len;
+                    let keys = Object.keys(cred);
+                    // Last item (server) in credentials is outside of credentials in response, hence i<len-1
+                    for(let i=0; i<len-1; i++){
+                        response += `"${key[i]}":"${cred[keys[i]]}",`;
+                    }
+                    response += `}, server: ${cred[keys[len-1]]}},"jsonrpc":"2.0"})`;
+                    // response has to be text/javascript so the browser can execute it
+                    request.respond({
+                        contentType: 'text/javascript; charset=utf-8',
+                        headers: { 'Access-Control-Allow-Origin': '*'},
+                        body: response
+                    });
                 }
 
-                request.respond({
-                    content: 'application/json',
-                    headers: { 'Access-Control-Allow-Origin': '*' },
-                    body: JSON.stringify(rpcResponse(payload))
-                }); 
+                
             } else if(request.url().includes('badinfo')){
                 payload = {
                     error: {
@@ -375,7 +408,7 @@ describe('User opens webpage', () => {
 
             return result;
         });
-        assert.equal(result, 'Request Failure', 'API does not fail');
+        assert.equal(result.name, 'InvalidUserException', 'API does not fail');
     });
 //#endregion
 //#region Credentials not callback
@@ -419,6 +452,49 @@ describe('User opens webpage', () => {
         assert.isUndefined(result.error, 'Error message received');
         assert.isDefined(result, 'result undefined');
     })
+
+//#region JSONP tests
+    it('Should send a JSONP request', async () => {
+        let result = await page.evaluate( (login) => {
+            window.geotabJSONP = function (data) {
+                console.log(data);
+            }
+            let api = new GeotabApi(function(callback){
+                callback(
+                    login.server,
+                    login.database,
+                    login.userName,
+                    login.password,
+                    ( err ) => {api = err;}
+                )
+            }, {rememberMe: false, jsonp: true});
+    
+            let resultPromise = new Promise( (resolve, reject) => {
+                let response;
+                api.call('Get', {typeName: 'Device'}, function(success){
+                    console.log('success');
+                    response = success;
+                }, function(error){
+                    reject(error);
+                });
+    
+                setInterval( () => {
+                    if(typeof response !== 'undefined'){
+                        resolve(response);
+                    }
+                }, 50);
+            });
+    
+            let result = resultPromise
+                .then( response => result = response)
+                .catch( err => console.log(err));
+            return result;
+        }, mocks.login);
+
+        assert.isDefined(result, 'JSONP did not return a result');
+
+    });
+//#endregion
 
     after( async () => {
         browser.close();
