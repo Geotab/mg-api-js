@@ -19,11 +19,29 @@ const rpcResponse = (response, err) => {
 
 // puppeteer options
 const opts = {
-    devtools: true, // Opens browser dev tools
-    headless: false,
+    devtools: true, // Opens browser dev tools when headless is false
+    headless: true,
     slowMo: 0,
     timeout: 10000
 };
+
+
+/**
+ * 
+ *  REQUIREMENTS
+ * --------------
+ * 
+ * Must cover:
+ *  - With Credentials/With Callback
+ *      - Authentication
+ *      - Calls (Async/Promise/Callback)
+ *      - GetSession (Async/Promise/Callback)
+ *      - MultiCalls (Async/Promise/Callback)
+ *      - forget
+ * 
+ * (22 Tests)
+ * 
+ */
 
 
 describe('User opens webpage', () => {
@@ -357,8 +375,7 @@ describe('User opens webpage', () => {
 
             return result;
         });
-
-        assert.equal(result.name, 'InvalidUserException', 'API does not fail');
+        assert.equal(result, 'Request Failure', 'API does not fail');
     });
 //#endregion
 //#region Credentials not callback
