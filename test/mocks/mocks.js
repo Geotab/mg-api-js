@@ -22,6 +22,14 @@ var credentials = {
     server: 'ThisServer'
   }
 };
+var refreshedCredentials = {
+  credentials: {
+    database: login.database,
+    sessionId: '3225932739582116431',
+    userName: login.userName,
+    server: 'ThisServer'
+  }
+}
 var device = {
   id: 'test1',
   licensePlate: 'L0L 0L0L',
@@ -36,5 +44,6 @@ module.exports = {
   login: login,
   user: user,
   credentials: credentials,
+  refreshedCredentials: refreshedCredentials,
   device: device
 };
