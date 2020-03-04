@@ -3,18 +3,6 @@ const GeotabApi = require('../../dist/api');
 const mocks = require('../mocks/mocks');
 require('./nocks/nock');
 /**
- * Unpacks the URIEncoded JSON-RPC string in the Nock request
- * 
- * @param {String} string JSON-RPC URIEncoded string
- */
-function unpackJSONRPC(URI){
-    let unpacked;
-    unpacked = decodeURI(URI);
-    return unpacked;
-}
-
-
-/**
  * 
  *  REQUIREMENTS
  * --------------

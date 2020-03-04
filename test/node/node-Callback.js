@@ -3,17 +3,6 @@ const GeotabApi = require('../../dist/api');
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
-/**
- * Unpacks the URIEncoded JSON-RPC string in the Nock request
- * 
- * @param {String} string JSON-RPC URIEncoded string
- */
-function unpackJSONRPC(URI){
-    let unpacked;
-    unpacked = decodeURI(URI);
-    return unpacked;
-}
-
 
 /**
  * 
@@ -295,7 +284,6 @@ describe('User loads GeotabApi node module with a callback', async () => {
             .catch( (err) => { 
                 console.log(err);
             });     
-
         assert.notEqual(auth1[0].sessionId, auth2[0].sessionId, 'Session did not refresh');
     });
 
