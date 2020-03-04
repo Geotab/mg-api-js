@@ -1,10 +1,28 @@
 const nock = require('nock');
 const mocks = require('../../mocks/mocks');
+let authenticationAttempt = 0;
 
-const auth = nock(`https://${mocks.server}/apiv1/`)
-                .persist()
-                .post('/Authenticate')
-                .reply(200, {result: mocks.credentials}); // mocking in JSON-RPC
+// Authentication
+// Alternating between credentials to help test the forget function
+const auth1 = nock(`https://${mocks.server}/apiv1/`, {
+        conditionally: () => authenticationAttempt % 2 === 0
+    })
+        .persist()
+        .post('/Authenticate')
+        .reply(200, () => {
+            authenticationAttempt++;
+            return {result: mocks.credentials}
+        })
+
+const auth2 = nock(`https://${mocks.server}/apiv1/`, {
+            conditionally: () => authenticationAttempt % 2 === 1
+        })
+        .persist()
+        .post('/Authenticate')
+        .reply(200, () => {
+            authenticationAttempt++;
+            return {result: mocks.refreshedCredentials}
+        });
 
 // Get requests
 const get = nock(`https://${mocks.server}/apiv1/`)
