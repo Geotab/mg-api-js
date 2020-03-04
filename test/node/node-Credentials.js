@@ -68,7 +68,18 @@ describe('User loads GeotabApi node module with credentials', async () => {
         assert.isDefined(response, 'Call did not return information');
     });
 
-    // it('Api should successfully run a call (Aync)')
+    it('Api should successfully run a call (Async)', async () => {
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
+
+        let call = api.call('Get', {typeName: 'Device'});
+
+        let response;
+        await call.then( result => {
+            response = result} )
+            .catch( err => console.log('err', err.message) );
+        assert.isDefined(response.data, 'Promise response undefined');
+    })
+
     // it('Api should successfully run a call (Promise)')
 
     it('Api should successfully run getSession (Callback)', async () => {
@@ -102,9 +113,23 @@ describe('User loads GeotabApi node module with credentials', async () => {
         assert.isDefined(auth, 'getSession callback did not return information');
     });
 
-    // it('Api should successfully run getSession (async)')
-    // it('Api should run getSession (Promise)')
-    
+    it('Api should successfully run getSession (Async)', async () =>{
+        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let server, credentials;
+        // getSession returns an unresolved promise
+        let call = api.getSession();
+        await call.then( response => {
+            // Response should have a .then appended in the api to add the server
+            // to the result
+            credentials = response.data.result[0];
+            server = response.data.result[1];
+        })
+        .catch( err => console.log(err));
+
+        assert.isObject(credentials, 'Credentials not properly received');
+        assert.equal(server, 'www.myaddin.com', 'Server is not matching expected output')        
+    });
+
     it('Api should run multicall (callback)', async () => {
         let api = await new GeotabApi(mocks.login, {rememberMe: false});
 
@@ -134,11 +159,26 @@ describe('User loads GeotabApi node module with credentials', async () => {
         assert.isTrue(result.length > 0, 'Multicall did not return list');
     });
 
-    // it('Api should run multi call (async)')
-    // it('Api should run multi call (Promise)')
-
-    it('Api should run forget ()', async () => {
+    it('Api should run multi call (async)', async () => {
         let api = await new GeotabApi(mocks.login, {rememberMe: false});
+
+        let calls = [
+            ["GetCountOf", { typeName: "Device" }],
+            ["GetCountOf", { typeName: "User" }]
+        ];
+
+        let response;
+        let multicall = api.multiCall(calls);
+        // multicall returns a promise
+        await multicall.then( result => {
+            response = result.data.result;
+        }).catch( err => console.log(err));
+
+        assert.isTrue( response.length === 2, 'Response does not match expected output');
+    });
+
+    it('Api should run forget', async () => {
+        let api = await new GeotabApi(mocks.login, {rememberMe: true});
 
         let sessionPromise = new Promise( (resolve, reject) => {
             let response = [];
@@ -191,6 +231,20 @@ describe('User loads GeotabApi node module with credentials', async () => {
             .catch( (err) => { 
                 console.log(err);
             });     
-        assert.notEqual(auth1, auth2, 'Session did not refresh');
+        assert.notEqual(auth1[0].sessionId, auth2[0].sessionId, 'Session did not refresh');
+    });
+    
+    it('Should run forget (Promise)', async () => {
+        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+
+        let sess1 = await api.getSession()
+                        .then(result => result.data.result[0].sessionId)
+                        .catch(err => console.log(err));
+
+        // Forget will return a promise with new credentials
+        let sess2 = await api.forget()
+                        .then( result => result.data.result[0].sessionId)
+                        .catch( err => console.log(err));
+        assert.isTrue( sess1 !== sess2, 'Sessions did not update properly');
     });
 });
