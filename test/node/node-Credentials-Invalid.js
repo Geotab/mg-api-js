@@ -9,17 +9,16 @@ require('./nocks/nock');
  *  Tests against call -> Call will be the failing point of most requests
  *  via bad args or credentials 
  */
-describe('User loads GeotabApi node module and triggers an error (Callback)', async () => {
+describe('User loads GeotabApi node module and triggers an error (Credentials)', async () => {
     it('Api should not allow a call with bad credentials', async () => {
         let error;
-        let api = new GeotabApi(function(callback){
-            callback(
-                login.server,
-                'badinfo',
-                login.username,
-                login.password,
-                ( err ) => {error = err;}
-            );
+        let login = mocks.login;
+        let api = new GeotabApi({
+            server: login.server,
+            database: 'badinfo',
+            username: login.username,
+            password: login.password,
+            error: (err) => { error = err;}
         }, {rememberMe: false});
 
         let response;
@@ -27,8 +26,8 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
             let response;
             api.call('Get', {typeName: 'Device'}, function(success){
                 response = success;
-            }, function(error){
-                console.log('error', error)
+            }, function(err){
+                error = err;
                 reject(error);
             });
 
@@ -54,14 +53,12 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
         
     it('Api should gracefully handle a call failure (Callback)', async () => {
         let error;
-        let api = new GeotabApi(function(callback){
-            callback(
-                login.server,
-                login.database,
-                login.username,
-                login.password,
-                ( err ) => {error = err;}
-            );
+        let login = mocks.login;
+        let api = new GeotabApi({
+            server: login.server,
+            database: login.database,
+            username: login.username,
+            password: login.password
         }, {rememberMe: false});
 
         let response;
@@ -93,14 +90,12 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
-        let api = new GeotabApi(function(callback){
-            callback(
-                login.server,
-                login.database,
-                login.username,
-                login.password,
-                ( err ) => {api = err;}
-            );
+        let login = mocks.login;
+        let api = new GeotabApi({
+            server: login.server,
+            database: login.database,
+            username: login.username,
+            password: login.password
         }, {rememberMe: false});
         // api.call returns a promise
         let call = api.call('Geet', {typeName: 'Device'});
