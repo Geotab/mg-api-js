@@ -13,6 +13,7 @@
     "mocha:web": "mocha test/web/*js --exit",
     "mocha:node": "mocha test/node/*js --exit",
     "build": "webpack --mode=production --config webpack.production.js",
+    "build:docs": "grunt groc",
     "serve": "http-server ./ -p 9000 --cors -s",
     "test": "npm run build && start-server-and-test serve http://127.0.0.1:9000 mocha",
     "test:web": "npm run build && start-server-and-test serve http://127.0.0.1:9000 mocha:web",
