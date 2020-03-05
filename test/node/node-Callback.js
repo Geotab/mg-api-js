@@ -5,20 +5,9 @@ const login = mocks.login;
 require('./nocks/nock');
 
 /**
- * 
- *  REQUIREMENTS
- * --------------
- * 
- * Must cover:
- *  - With Credentials/With Callback
- *      - Authentication
- *      - Calls (Async/Promise/Callback)
- *      - GetSession (Async/Promise/Callback)
- *      - MultiCalls (Async/Promise/Callback)
- *      - forget
- * 
- * (22 Tests)
- * 
+ *  Tests the core functionality of failing cases
+ *  Tests failures against call -> Call will be the failing point of most requests
+ *  via bad args or credentials 
  */
 
 describe('User loads GeotabApi node module with a callback', async () => {

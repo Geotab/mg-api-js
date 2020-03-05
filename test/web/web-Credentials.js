@@ -1,7 +1,18 @@
 const assert = require('chai').assert;
 const mocks = require('../mocks/mocks.js');
 const serverSetup = require('./serverSetup');
-
+/**
+ * Test cases for:
+ *  - API functionality with callback
+ *      - Runs basic 4 functions
+ *      - Runs JSONP request
+ *      - Test to fail on call method
+ * 
+ *  All callback tests using puppeteer's evaluate command must be 
+ *      wrapped in a promise -> puppeteer does not like waiting for
+ *      callbacks to finish and will return null values unless explicitly
+ *      made to wait with callbacks
+ */
 describe('User loads web api with credentials', () => {
     let browser,
         page,

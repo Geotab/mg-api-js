@@ -6,7 +6,7 @@ require('./nocks/nock');
 
 /**
  *  Tests the core functionality of failing cases
- *  Tests against call -> Call will be the failing point of most requests
+ *  Tests failures against call -> Call will be the failing point of most requests
  *  via bad args or credentials 
  */
 describe('User loads GeotabApi node module and triggers an error (Callback)', async () => {
