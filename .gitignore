@@ -1,7 +1,7 @@
 node_modules
 test/temp
 test/credentials.js
-tmp
+.tmp
 docs
 .DS_Store
 npm-debug.log
