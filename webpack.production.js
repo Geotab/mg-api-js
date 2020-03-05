@@ -28,7 +28,7 @@ module.exports = merge(common, {
                             ['@babel/preset-env',
                             { 
                                 'targets': {
-                                    'ie': '11'
+                                    'ie': '10'
                                 }
                             }]
                         ]
