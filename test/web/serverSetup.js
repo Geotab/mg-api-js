@@ -59,6 +59,13 @@ module.exports = async function(){
                                 break;
                         }
                         break;
+                    case 'Geet':
+                        // Poorly formed request tests
+                        payload = {
+                            name: "InvalidCall",
+                            message: "Bad info entered"
+                        }
+                        break;
                     case 'ExecuteMultiCall':
                         // Looping each of the calls
                         rpcBody.params.calls.forEach( call => {
@@ -107,16 +114,14 @@ module.exports = async function(){
             
         } else if(request.url().includes('badinfo')){
             payload = {
-                error: {
-                    name: "InvalidUserException",
-                    message: "Bad info entered"
-                }
+                name: "InvalidUserException",
+                message: "Bad info entered"
             }
 
             request.respond({
                 content: 'application/json',
                 headers: { 'Access-Control-Allow-Origin': '*'},
-                body: JSON.stringify(rpcResponse(payload))
+                body: JSON.stringify(rpcResponse(undefined, payload))
             });
         } else {
             request.continue();

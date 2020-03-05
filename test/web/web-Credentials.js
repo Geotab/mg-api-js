@@ -253,19 +253,12 @@ describe('User loads web api with credentials', () => {
     })
 
     it('Api should send a JSONP request', async () => {
-        let result = await page.evaluate( (login) => {
+        let result = await page.evaluate( async (login) => {
             window.geotabJSONP = function (data) {
                 console.log(data);
             }
-            let api = new GeotabApi(function(callback){
-                callback(
-                    login.server,
-                    login.database,
-                    login.userName,
-                    login.password,
-                    ( err ) => {api = err;}
-                )
-            }, {rememberMe: false, jsonp: true});
+            let api = await new GeotabApi(login, {rememberMe: false, jsonp: true})
+
     
             let resultPromise = new Promise( (resolve, reject) => {
                 let response;
@@ -293,7 +286,93 @@ describe('User loads web api with credentials', () => {
 
     });
 
+//#region Test to fail
+it('Should return errors with incorrect credentials', async () => {
+
+    let result = await page.evaluate( async (login) => {
+        let apiError;
+        let api = await new GeotabApi({
+            server: 'badinfo',
+            database: 'badinfo',
+            username: 'badinfo',
+            password: 'badinfo',
+            error: (err) => apiError = err
+        }, {rememberMe: false});
+
+        let getPromise = new Promise( (resolve, reject) => {
+            let response;
+            api.call('Get', {typeName: 'Device'}, function(result){
+                response = result;
+            }, function(error){
+                reject(error);
+            });
+
+            let attempts = 0;
+            setInterval( () => {
+                attempts ++;
+                if(typeof response !== 'undefined'){
+                    resolve(response); 
+                }
+                if(typeof apiError !== 'undefined'){
+                    reject(apiError);
+                }
+                if( attempts === 500){
+                    reject('authentication never resolves');
+                }
+            }, 5);
+        });
+        
+        let result = await getPromise
+            .then( response => response)
+            .catch( err => err);
+
+        return result;
+    }, mocks.login);
+    assert.equal(result.name, 'InvalidUserException', 'API does not fail');
+});
+
+it('Api should gracefully handle call errors', async () => {
+
+    let result = await page.evaluate( async (login) => {
+        let apiError;
+        login.error = (err) => apiError = err;
+        let api = await new GeotabApi(login, {rememberMe: false});
+
+        let getPromise = new Promise( (resolve, reject) => {
+            let response;
+            // Malformed call
+            api.call('Geet', {typeName: 'Device'}, function(result){
+                response = result;
+            }, function(error){
+                reject(error);
+            });
+
+            let attempts = 0;
+            setInterval( () => {
+                attempts ++;
+                if(typeof response !== 'undefined'){
+                    resolve(response); 
+                }
+                if(typeof apiError !== 'undefined'){
+                    reject(apiError);
+                }
+                if( attempts === 500){
+                    reject('authentication never resolves');
+                }
+            }, 5);
+        });
+        
+        let result = await getPromise
+            .then( response => response)
+            .catch( err => err);
+
+        return result;
+    }, mocks.login);
+    assert.equal(result.name, 'InvalidCall', 'API does not fail on malformed calls');
+});
+//#endregion
+
     after(async () => {
-        browser.close();
+        // browser.close();
     });
 });

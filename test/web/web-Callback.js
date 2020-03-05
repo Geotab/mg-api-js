@@ -391,7 +391,6 @@ describe('User loads web api with callback', () => {
                 )
             }, {rememberMe: false});
 
-            await api.forget();
             let getPromise = new Promise( (resolve, reject) => {
                 let response;
                 api.call('Get', {typeName: 'Device'}, function(result){
@@ -406,7 +405,7 @@ describe('User loads web api with callback', () => {
                     if(typeof response !== 'undefined'){
                         resolve(response); 
                     }
-                    if(apiError){
+                    if(typeof apiError !== 'undefined'){
                         reject(apiError);
                     }
                     if( attempts === 500){
@@ -422,6 +421,53 @@ describe('User loads web api with callback', () => {
             return result;
         });
         assert.equal(result.name, 'InvalidUserException', 'API does not fail');
+    });
+
+    it('Api should gracefully handle call errors', async () => {
+
+        let result = await page.evaluate( async (login) => {
+            let apiError;
+            let api = new GeotabApi(function(callback){
+                callback(
+                    login.server,
+                    login.database,
+                    login.userName,
+                    login.password,
+                    ( err ) => {apiError = err;}
+                )
+            }, {rememberMe: false});
+    
+            let getPromise = new Promise( (resolve, reject) => {
+                let response;
+                // Malformed call
+                api.call('Geet', {typeName: 'Device'}, function(result){
+                    response = result;
+                }, function(error){
+                    reject(error);
+                });
+    
+                let attempts = 0;
+                setInterval( () => {
+                    attempts ++;
+                    if(typeof response !== 'undefined'){
+                        resolve(response); 
+                    }
+                    if(typeof apiError !== 'undefined'){
+                        reject(apiError);
+                    }
+                    if( attempts === 500){
+                        reject('authentication never resolves');
+                    }
+                }, 5);
+            });
+            
+            let result = await getPromise
+                .then( response => response)
+                .catch( err => err);
+    
+            return result;
+        }, mocks.login);
+        assert.equal(result.name, 'InvalidCall', 'API does not fail on malformed calls');
     });
 //#endregion
 
