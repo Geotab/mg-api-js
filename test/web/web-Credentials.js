@@ -244,46 +244,17 @@ describe('User loads web api with credentials', () => {
 //#region Test to fail
 it('Should return errors with incorrect credentials', async () => {
 
-    let result = await page.evaluate( async (login) => {
-        let apiError;
+    let result = await page.evaluate( async () => {
         let api = await new GeotabApi({
             server: 'badinfo',
             database: 'badinfo',
             username: 'badinfo',
-            password: 'badinfo',
-            error: (err) => apiError = err
+            password: 'badinfo'
         }, {rememberMe: false});
-
-        let getPromise = new Promise( (resolve, reject) => {
-            let response;
-            api.call('Get', {typeName: 'Device'}, function(result){
-                response = result;
-            }, function(error){
-                reject(error);
-            });
-
-            let attempts = 0;
-            setInterval( () => {
-                attempts ++;
-                if(typeof response !== 'undefined'){
-                    resolve(response); 
-                }
-                if(typeof apiError !== 'undefined'){
-                    reject(apiError);
-                }
-                if( attempts === 500){
-                    reject('authentication never resolves');
-                }
-            }, 5);
-        });
-        
-        let result = await getPromise
-            .then( response => response)
-            .catch( err => err);
-
-        return result;
-    }, mocks.login);
-    assert.equal(result.name, 'InvalidUserException', 'API does not fail');
+       
+        return api;
+    });
+    assert.equal(result.error.name, 'InvalidUserException', 'API does not fail');
 });
 
 it('Api should gracefully handle call errors', async () => {

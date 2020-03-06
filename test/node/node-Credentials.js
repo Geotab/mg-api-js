@@ -10,13 +10,13 @@ require('./nocks/nock');
 
 describe('User loads GeotabApi node module with credentials', async () => {
 
-    it('Api should initialize', () => {
-        let api = new GeotabApi(mocks.login, {rememberMe: false});
-        assert.isDefined(api);
+    it('Api should initialize', async () => {
+        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        assert.isDefined(api.call);
     });
 
     it('Api should successfully run a call (Callback)', async () => {
-        let api = new GeotabApi(mocks.login, {rememberMe: false});
+        let api = await new GeotabApi(mocks.login, {rememberMe: false});
         let callPromise = new Promise( (resolve, reject) => {
             api.call('Get', {typeName: 'Device'}, function(success){
                 resolve(success);
@@ -32,7 +32,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
     });
 
     it('Api should successfully run a call (Async)', async () => {
-        let api = new GeotabApi(mocks.login, {rememberMe: false});
+        let api = await new GeotabApi(mocks.login, {rememberMe: false});
         let call = api.call('Get', {typeName: 'Device'});
         let response = await call
                         .then( result => result )

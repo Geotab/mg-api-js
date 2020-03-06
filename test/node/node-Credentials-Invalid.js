@@ -11,46 +11,29 @@ require('./nocks/nock');
  */
 describe('User loads GeotabApi node module and triggers an error (Credentials)', async () => {
     it('Api should not allow a call with bad credentials', async () => {
-        let error;
         let login = mocks.login;
-        let api = new GeotabApi({
+        let api = await new GeotabApi({
             server: login.server,
             database: 'badinfo',
             username: login.username,
-            password: login.password,
-            error: (err) => { error = err;}
-        }, {rememberMe: false});
+            password: login.password
+        }, {rememberMe: false})
+            .catch( err => console.log('err:', err.message));
 
-        let callPromise = new Promise( (resolve, reject) => {
-            api.call('Get', {typeName: 'Device'}, function(success){
-                resolve(success);
-            }, function(err){
-                reject(error);
-            });
-
-            setInterval( () => {
-                if(typeof error !== 'undefined'){
-                    resolve(error);
-                }
-            }, 5);
-        });
-
-        let response = await callPromise
-            .then( resolved => {
-                // In this case, the "resolved" should be our error
-                return resolved;
-            })
-            .catch( error => {
-                // Rejections here should also be considered a failure as
-                // MYG should send a response with an error embedded
-                console.log('rejected', error);
-            });
-        assert.isTrue(response.name === 'InvalidUserException', 'Given credentials accepted as valid');
+        let result;
+        try {
+            result = api.call('Get', {typeName: 'Device'})
+                .then( result => result)
+                .catch( err => err)
+        } catch(err){
+          result = err.message;
+        }
+        assert.isTrue(result === 'api.call is not a function', 'Given credentials accepted as valid');
     });
         
     it('Api should gracefully handle a call failure (Callback)', async () => {
         let login = mocks.login;
-        let api = new GeotabApi({
+        let api = await new GeotabApi({
             server: login.server,
             database: login.database,
             username: login.username,
@@ -73,7 +56,7 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
 
     it('Api should gracefully handle a call failure (Async)', async () => {
         let login = mocks.login;
-        let api = new GeotabApi({
+        let api = await new GeotabApi({
             server: login.server,
             database: login.database,
             username: login.username,

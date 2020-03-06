@@ -6,11 +6,6 @@ let authenticationAttempt = 0;
 const parseBody = (bodyStr) => {
     return JSON.parse(bodyStr['JSON-RPC']);
 }
-// const auth = nock(`https://${mocks.server}/apiv1/`)
-//             .persist()
-//             .filteringRequestBody( (body) => parseBody(body) )
-//             .post('/Authenticate')
-//             .reply(200, (uri, body) => parseBody(body))
 
 // Authentication
 // Alternating between credentials to help test the forget function
@@ -40,6 +35,7 @@ const auth2 = nock(`https://${mocks.server}/apiv1/`, {
             return {result: mocks.refreshedCredentials}
         })
 
+// Bad credentials test case
 const auth3 = nock(`https://${mocks.server}/apiv1/`)
         .persist()
         .post('/Authenticate', (body) => {
