@@ -88,10 +88,8 @@ module.exports = async function(){
                 // https://www.myaddin.com/apiv1/Authenticate?JSONP=geotabJSONP.json14328697799013979&database=%22testDB%22&userName=%22testUser%40test.com%22&password=%22...%22
                 let url = request.url();
                 let splitUrl = url.split('?');
-                let method = splitUrl[0];
                 // callback matches window scope function passed in by user
                 let callback = splitUrl[1].match(/geotabJSONP\.json[\d]+/)[0];
-                let params = splitUrl[1].split(/geotabJSONP\.json[\d]+/)[1];
                 let cred = mocks.credentials.credentials;
                 // JSONP expects executeable javascript to be returned
                 let response = `${callback}({"result": {"credentials":{`;
@@ -110,8 +108,6 @@ module.exports = async function(){
                     body: response
                 });
             }
-
-            
         } else if(request.url().includes('badinfo')){
             payload = {
                 name: "InvalidUserException",

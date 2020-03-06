@@ -28,7 +28,6 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
             api.call('Get', {typeName: 'Device'}, function(success){
                 response = success;
             }, function(error){
-                console.log('error', error)
                 reject(error);
             });
 
@@ -53,7 +52,6 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
     });
         
     it('Api should gracefully handle a call failure (Callback)', async () => {
-        let error;
         let api = new GeotabApi(function(callback){
             callback(
                 login.server,
@@ -66,20 +64,11 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
 
         let response;
         let callPromise = new Promise( (resolve, reject) => {
-            let response;
             api.call('Geet', {typeName: 'Device'}, function(success){
-                response = success
+                resolve(success);
             }, function(error){
-                console.log('error', error)
                 reject(error);
             });
-
-            setInterval( () => {
-                // Response should be an error message
-                if(typeof response !== 'undefined'){
-                    resolve(response);
-                }
-            }, 5);
         });
 
         await callPromise

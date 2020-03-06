@@ -21,13 +21,10 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
             error: (err) => { error = err;}
         }, {rememberMe: false});
 
-        let response;
         let callPromise = new Promise( (resolve, reject) => {
-            let response;
             api.call('Get', {typeName: 'Device'}, function(success){
-                response = success;
+                resolve(success);
             }, function(err){
-                error = err;
                 reject(error);
             });
 
@@ -38,10 +35,10 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
             }, 5);
         });
 
-        await callPromise
+        let response = await callPromise
             .then( resolved => {
                 // In this case, the "resolved" should be our error
-                response = resolved;
+                return resolved;
             })
             .catch( error => {
                 // Rejections here should also be considered a failure as
@@ -52,7 +49,6 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
     });
         
     it('Api should gracefully handle a call failure (Callback)', async () => {
-        let error;
         let login = mocks.login;
         let api = new GeotabApi({
             server: login.server,
@@ -61,31 +57,17 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
             password: login.password
         }, {rememberMe: false});
 
-        let response;
         let callPromise = new Promise( (resolve, reject) => {
-            let response;
             api.call('Geet', {typeName: 'Device'}, function(success){
-                response = success
+                resolve(success);
             }, function(error){
-                console.log('error', error)
                 reject(error);
             });
-
-            setInterval( () => {
-                // Response should be an error message
-                if(typeof response !== 'undefined'){
-                    resolve(response);
-                }
-            }, 5);
         });
 
-        await callPromise
-            .then( resolved => {
-                response = resolved;
-            })
-            .catch( error => {
-                console.log('rejected', error);
-            });
+        let response = await callPromise
+                        .then( resolved => resolved )
+                        .catch( error => console.log('rejected', error) );
         assert.isTrue(response.error.name === 'InvalidRequest', 'Call did not return information');
     });
 
@@ -99,10 +81,9 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         }, {rememberMe: false});
         // api.call returns a promise
         let call = api.call('Geet', {typeName: 'Device'});
-        let response;
-        await call.then( result => {
-            response = result} )
-            .catch( err => console.log('err', err.message) );
+        let response = await call
+                            .then( result => result )
+                            .catch( err => console.log('err', err.message) );
         assert.isTrue(response.data.result.error.name === 'InvalidRequest', 'Promise response undefined');
     });
 });

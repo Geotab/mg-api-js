@@ -32,7 +32,7 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
             return api;
@@ -48,23 +48,16 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
 
             let getPromise = new Promise( (resolve, reject) => {
-                let response;
                 api.call('Get', {typeName: 'Device'}, function(result){
-                    response = result;
+                    resolve(result);
                 }, function(error){
                     reject(error);
                 });
-
-                setInterval( () => {
-                    if(typeof response !== 'undefined'){
-                        resolve(response);
-                    }
-                }, 5);
             });
 
             let result = await getPromise
@@ -73,8 +66,7 @@ describe('User loads web api with callback', () => {
 
             return result;
         }, mocks.login);
-
-        assert.isDefined(result, 'Call request did not return a result');
+        assert.isTrue(result[0].name === 'DeviceName', 'Call request did not return a result');
     })
 
     it('Api should successfully run a call (async)', async () => {
@@ -85,7 +77,7 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
             let result = await api.call('Get', {typeName: 'Device'})
@@ -104,22 +96,16 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
             // Puppeteer doesn't like waiting for callbacks.
             // Using a promise to make it wait
             let sessionPromise = new Promise( (resolve, reject) => {
-                let response = [];
                 try {
                     api.getSession( (credentials, server) => {
-                        response = [credentials, server];
+                        resolve([credentials, server]);
                     });  
-                    setInterval( () => {    
-                        if(response.length > 0){
-                            resolve(response);
-                        }
-                    }, 5);
                 } catch (err) {
                     reject(err);
                 }
@@ -136,7 +122,8 @@ describe('User loads web api with callback', () => {
             return auth;
 
         }, mocks.login)
-        assert.isNotEmpty(auth, 'Authentication is empty');
+        assert.isObject(auth[0], 'Credentials not properly received');
+        assert.equal(auth[1], 'www.myaddin.com', 'Server is not matching expected output');
     });
 
     it('Api should successfully run getSession (async)', async () => {
@@ -147,7 +134,7 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});            
             let credentials, server;
@@ -174,27 +161,20 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
 
             let getPromise = new Promise( (resolve, reject) => {
-                let response = [];
                 let calls = [
                     ["GetCountOf", { typeName: "Device" }],
                     ["GetCountOf", { typeName: "User" }]
                 ];
                 api.multiCall(calls, function(result){
-                    response = result;
+                    resolve(result);
                 }, function(error){
                     reject(error);
                 });
-
-                setInterval( () => {
-                    if(response.length > 0){
-                        resolve(response);
-                    }
-                }, 5);
             });
 
             let result = await getPromise
@@ -203,8 +183,7 @@ describe('User loads web api with callback', () => {
 
             return result;
         }, mocks.login);
-
-        assert.isDefined(result, 'Multi-call request did not return a result');
+        assert.isTrue(result.length === 2, 'Multi-call request did not return the expected result');
     })
 
     it('Api should run mutlicall (async)', async () => {
@@ -215,7 +194,7 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
 
@@ -224,15 +203,14 @@ describe('User loads web api with callback', () => {
                 ["GetCountOf", { typeName: "User" }]
             ];
     
-            let response;
             let multicall = api.multiCall(calls);
             // multicall returns a promise
-            await multicall.then( result => {response = result.data.result;})
+            let response = await multicall
+                .then( result => result.data.result)
                 .catch( err => console.log(err));
 
             return response;
         }, mocks.login);
-
         assert.isTrue(result.length === 2, 'Multicall not returning expected array');
     })
 
@@ -244,37 +222,25 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
 
             let firstSession = new Promise( (resolve, reject) => {
-                let response = [];
                 try {
                     api.getSession( (credentials, server) => {
-                        response = [credentials, server];
+                        resolve([credentials, server]);
                     });  
-                    setInterval( () => {    
-                        if(response.length > 0){
-                            resolve(response);
-                        }
-                    }, 5);
                 } catch (err) {
                     reject(err);
                 }
             });
 
             let secondSession = new Promise( (resolve, reject) => {
-                let response = [];
                 try {
                     api.getSession( (credentials, server) => {
-                        response = [credentials, server];
+                        resolve([credentials, server]);
                     });  
-                    setInterval( () => {    
-                        if(response.length > 0){
-                            resolve(response);
-                        }
-                    }, 5);
                 } catch (err) {
                     reject(err);
                 }
@@ -314,10 +280,9 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.username,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false});
-
 
             let sess1 = await api.getSession()
                 .then(result => result.data.result[0].sessionId)
@@ -346,24 +311,16 @@ describe('User loads web api with callback', () => {
                     login.database,
                     login.userName,
                     login.password,
-                    ( err ) => {api = err;}
+                    ( err ) => {console.log(err)}
                 )
             }, {rememberMe: false, jsonp: true});
     
             let resultPromise = new Promise( (resolve, reject) => {
-                let response;
                 api.call('Get', {typeName: 'Device'}, function(success){
-                    console.log('success');
-                    response = success;
+                    resolve(success);
                 }, function(error){
                     reject(error);
                 });
-    
-                setInterval( () => {
-                    if(typeof response !== 'undefined'){
-                        resolve(response);
-                    }
-                }, 50);
             });
     
             let result = resultPromise
@@ -373,7 +330,6 @@ describe('User loads web api with callback', () => {
         }, mocks.login);
 
         assert.isDefined(result, 'JSONP did not return a result');
-
     });
 //#endregion
 //#region Test to fail
@@ -383,10 +339,10 @@ describe('User loads web api with callback', () => {
             let apiError;
             let api = await new GeotabApi(function(callback){
                 callback(
-                    "badInfo",
-                    "badInfo",
-                    "badInfo",
-                    "badInfo",
+                    "badinfo",
+                    "badinfo",
+                    "badinfo",
+                    "badinfo",
                     ( err ) => { apiError = err}
                 )
             }, {rememberMe: false});
