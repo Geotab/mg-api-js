@@ -5,7 +5,7 @@ A MyGeotab API wrapper for clientside javascript
 ## Installation
 
 ```
-$ bower install --save mg-api-js
+$ npm install --save mg-api-js
 ```
 
 ## Usage
@@ -47,19 +47,16 @@ api.call('Get', {
 
 ### Credentials
 
-If credentials are known, they can be provided in an object
+If credentials are known, they can be provided in an object. This will return a promise.
 
 ```
-// Error is an error callback. If your authentication fails for any reason, this
-//    is the callback used to handle it
 const credentials = {
     server: 'server',
     database: 'database',
     username: 'username',
-    password: 'password',
-    error: (err) => console.log(err)
+    password: 'password'
 }
-const api = GeotabApi(credentials)
+const api = await new GeotabApi(credentials);
 
 // Sample API invocation retrieves a single "Device" object
 api.call('Get', {
@@ -72,6 +69,24 @@ api.call('Get', {
 }, function (err) {
     console.error(err);
 });
+```
+If the api fails to authenticate, it will return an error object instead
+
+```
+const credentials = {
+    server: 'badinfo',
+    database: 'database',
+    username: 'username',
+    password: 'password'
+}
+
+const api = await new GeotabApi(credentials);
+
+if(api.error){
+    console.log(api.error.name, ' -> ', api.error.message);
+} else {
+    api.call(...)...
+}
 ```
 
 ## API
@@ -96,12 +111,11 @@ Make a request to the database and receive a promise
 let myCall = api.call('Get', {
     typeName: 'Device',
     resultsLimit: 1
-})'
+});
 
 myCall
     .then( result => console.log(result))
     .catch( error => console.log(error));
-
 })
 ```
 
