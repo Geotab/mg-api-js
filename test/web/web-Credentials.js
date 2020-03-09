@@ -234,8 +234,8 @@ describe('User loads web api with credentials', () => {
                 });
             });
             let result = resultPromise
-                .then( response => result = response)
-                .catch( err => console.log(err));
+                .then( response => response)
+                .catch( err => err);
             return result;
         }, mocks.login);
         assert.isDefined(result, 'JSONP did not return a result');
