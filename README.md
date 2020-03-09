@@ -53,7 +53,7 @@ If credentials are known, they can be provided in an object. This will return a 
 const credentials = {
     server: 'server',
     database: 'database',
-    username: 'username',
+    userName: 'username',
     password: 'password'
 }
 const api = await new GeotabApi(credentials);
@@ -76,7 +76,7 @@ If the api fails to authenticate, it will return an error object instead
 const credentials = {
     server: 'badinfo',
     database: 'database',
-    username: 'username',
+    userName: 'username',
     password: 'password'
 }
 
