@@ -241,6 +241,21 @@ describe('User loads web api with credentials', () => {
         assert.isDefined(result, 'JSONP did not return a result');
     });
 
+    it('Api rememberMe should function properly', async () => {
+        let result = await page.evaluate( async (login) => {
+            let api1 = await new GeotabApi(login, {rememberMe: true});
+            let api2 = await new GeotabApi(login, {rememberMe: true});
+            let sess1 = await api1.getSession()
+                                    .then(response => response.data.result[0].sessionId)
+                                    .catch(err => console.log(err));
+            let sess2 = await api2.getSession()
+                                    .then(response => response.data.result[0].sessionId)
+                                    .catch(err => console.log(err));
+            return [sess1, sess2];
+        }, mocks.login);
+
+        assert.isTrue( result[0] === result[1], 'Session IDs do not match');
+    });
 //#region Test to fail
 it('Should return errors with incorrect credentials', async () => {
 

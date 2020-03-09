@@ -245,4 +245,34 @@ describe('User loads GeotabApi node module with a callback', async () => {
                         .catch( err => console.log(err));
         assert.isTrue( sess1 !== sess2, 'Sessions did not update properly');
     });
+
+    it('Api rememberMe should function properly', async () => {
+        let api1 = await new GeotabApi(function(callback){
+            callback(
+                login.server,
+                login.database,
+                login.userName,
+                login.password,
+                ( err ) => {console.log(err)}
+            )
+        }, {rememberMe: true});
+
+        let api2 = await new GeotabApi(function(callback){
+                callback(
+                    login.server,
+                    login.database,
+                    login.userName,
+                    login.password,
+                    ( err ) => {console.log(err)}
+                )
+            }, {rememberMe: true});
+
+        let sess1 = await api1.getSession()
+                                .then(response => response.data.result[0].sessionId)
+                                .catch(err => console.log(err));
+        let sess2 = await api2.getSession()
+                                .then(response => response[0].sessionId)
+                                .catch(err => console.log(err));
+        assert.isTrue( sess1 === sess2, 'Session IDs do not match');
+    });
 });

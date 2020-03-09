@@ -331,6 +331,41 @@ describe('User loads web api with callback', () => {
 
         assert.isDefined(result, 'JSONP did not return a result');
     });
+
+    it('Api rememberMe should function properly', async () => {
+        let result = await page.evaluate( async (login) => {
+            let api1 = await new GeotabApi(function(callback){
+                callback(
+                    login.server,
+                    login.database,
+                    login.userName,
+                    login.password,
+                    ( err ) => {console.log(err)}
+                )
+            }, {rememberMe: true});
+
+            let api2 = await new GeotabApi(function(callback){
+                callback(
+                    login.server,
+                    login.database,
+                    login.userName,
+                    login.password,
+                    ( err ) => {console.log(err)}
+                )
+            }, {rememberMe: true});
+            
+            let sess1 = await api1.getSession()
+                                    .then(response => response.data.result[0].sessionId)
+                                    .catch(err => console.log(err));
+            let sess2 = await api2.getSession()
+            // Response comes out shaped differently because it was passed over by localstorage and
+            // Not a successful authentication request
+                                    .then(response => response[0].sessionId) 
+                                    .catch(err => console.log(err));
+            return [sess1, sess2];
+        }, mocks.login);
+        assert.isTrue( result[0] === result[1], 'Session IDs do not match');
+    });
 //#endregion
 //#region Test to fail
     it('Should return errors with incorrect credentials', async () => {
