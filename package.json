@@ -14,7 +14,7 @@
     "mocha:node": "mocha test/node/*js --exit",
     "build": "webpack --mode=production --config webpack.production.js",
     "build:docs": "grunt groc",
-    "serve":"webpack-dev-server --mode=development --config webpack.development.js",
+    "serve": "webpack-dev-server --mode=development --config webpack.development.js",
     "test": "start-server-and-test serve http://localhost:9000 mocha",
     "test:web": "start-server-and-test serve http://localhost:9000 mocha:web",
     "test:node": "start-server-and-test serve http://localhost:9000 mocha:node"
@@ -46,7 +46,6 @@
     "grunt-groc": "^0.7.1",
     "grunt-standard": "3.1.0",
     "grunt-umd": "^2.3.0",
-    "http-server": "^0.12.1",
     "load-grunt-config": "^0.19.2",
     "mocha": "^7.1.0",
     "nock": "^12.0.1",
