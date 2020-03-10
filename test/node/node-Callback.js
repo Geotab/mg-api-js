@@ -51,7 +51,7 @@ describe('User loads GeotabApi node module with a callback', async () => {
     });
 
     it('Api should successfully run a call (Async)', async () => {
-        let api = new GeotabApi(function(callback){
+        let api = await new GeotabApi(function(callback){
             callback(
                 login.server,
                 login.database,
@@ -155,7 +155,7 @@ describe('User loads GeotabApi node module with a callback', async () => {
     });
 
     it('Api should run multi call (async)', async () => {
-        let api = new GeotabApi(function(callback){
+        let api = await new GeotabApi(function(callback){
             callback(
                 login.server,
                 login.database,

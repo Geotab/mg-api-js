@@ -82,7 +82,7 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
-        let api = new GeotabApi(function(callback){
+        let api = await new GeotabApi(function(callback){
             callback(
                 login.server,
                 login.database,
