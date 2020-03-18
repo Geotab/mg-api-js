@@ -220,27 +220,6 @@ describe('User loads web api with credentials', () => {
         assert.isTrue(sess1 !== sess2, 'Session IDs are the same');
     })
 
-    it('Api should send a JSONP request', async () => {
-        let result = await page.evaluate( async (login) => {
-            window.geotabJSONP = function (data) {
-                console.log(data);
-            }
-            let api = await new GeotabApi(login, {rememberMe: false, jsonp: true});
-            let resultPromise = new Promise( (resolve, reject) => {
-                api.call('Get', {typeName: 'Device'}, function(success){
-                    resolve(success);
-                }, function(error){
-                    reject(error);
-                });
-            });
-            let result = resultPromise
-                .then( response => response)
-                .catch( err => err);
-            return result;
-        }, mocks.login);
-        assert.isDefined(result, 'JSONP did not return a result');
-    });
-
     it('Api rememberMe should function properly', async () => {
         let result = await page.evaluate( async (login) => {
             let api1 = await new GeotabApi(login, {rememberMe: true});
