@@ -3,7 +3,7 @@ const GeotabApi = require('../../dist/api');
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
-
+require('source-map-support').install();
 /**
  *  Tests the core functionality of failing cases
  *  Tests failures against call -> Call will be the failing point of most requests
@@ -62,7 +62,7 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
             );
         }, {rememberMe: false});
 
-        let response;
+        
         let callPromise = new Promise( (resolve, reject) => {
             api.call('Geet', {typeName: 'Device'}, function(success){
                 resolve(success);
@@ -71,14 +71,10 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
             });
         });
 
-        await callPromise
-            .then( resolved => {
-                response = resolved;
-            })
-            .catch( error => {
-                console.log('rejected', error);
-            });
-        assert.isTrue(response.error.name === 'InvalidRequest', 'Call did not return information');
+        let response = await callPromise
+            .then( resolved => resolved)
+            .catch( error => error);
+        assert.isTrue(response.name === 'InvalidRequest', 'Call did not return information');
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
@@ -93,10 +89,9 @@ describe('User loads GeotabApi node module and triggers an error (Callback)', as
         }, {rememberMe: false});
         // api.call returns a promise
         let call = api.call('Geet', {typeName: 'Device'});
-        let response;
-        await call.then( result => {
-            response = result} )
-            .catch( err => console.log('err', err.message) );
-        assert.isTrue(response.data.result.error.name === 'InvalidRequest', 'Promise response undefined');
+        let response = await call
+            .then( result => result.data )
+            .catch( err => err.data );
+        assert.isTrue(response.error.name === 'InvalidRequest', 'Promise response undefined');
     });
 });

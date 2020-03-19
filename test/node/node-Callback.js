@@ -3,6 +3,7 @@ const GeotabApi = require('../../dist/api');
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
+require('source-map-support').install();
 
 /**
  *  Tests the core functionality of failing cases

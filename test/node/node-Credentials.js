@@ -2,6 +2,8 @@ const assert = require('chai').assert;
 const GeotabApi = require('../../dist/api');
 const mocks = require('../mocks/mocks');
 require('./nocks/nock');
+require('source-map-support').install();
+
 /**
  *  Tests the core functionality of failing cases
  *  Tests failures against call -> Call will be the failing point of most requests

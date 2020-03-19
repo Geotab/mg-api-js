@@ -3,6 +3,7 @@ const GeotabApi = require('../../dist/api');
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
+require('source-map-support').install();
 
 /**
  *  Tests the core functionality of failing cases
@@ -50,8 +51,8 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
 
         let response = await callPromise
                         .then( resolved => resolved )
-                        .catch( error => console.log('rejected', error) );
-        assert.isTrue(response.error.name === 'InvalidRequest', 'Call did not return information');
+                        .catch( error => error );
+        assert.isTrue(response.name === 'InvalidRequest', 'Call did not return information');
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
@@ -65,8 +66,8 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         // api.call returns a promise
         let call = api.call('Geet', {typeName: 'Device'});
         let response = await call
-                            .then( result => result )
-                            .catch( err => console.log('err', err.message) );
-        assert.isTrue(response.data.result.error.name === 'InvalidRequest', 'Promise response undefined');
+                            .then( result => result.data )
+                            .catch( err => err.data);
+        assert.isTrue(response.error.name === 'InvalidRequest', 'Promise response undefined');
     });
 });
