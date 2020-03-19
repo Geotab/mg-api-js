@@ -367,9 +367,6 @@ describe('User loads web api with callback', () => {
                     if(typeof apiError !== 'undefined'){
                         reject(apiError);
                     }
-                    if( attempts === 500){
-                        reject('authentication never resolves');
-                    }
                 }, 5);
             });
             

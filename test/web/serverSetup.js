@@ -1,25 +1,10 @@
 const puppeteer = require('puppeteer');
 const mocks = require('../mocks/mocks.js');
 
-// JSON-RPC helpers
-const rpcRequest = body => {
-    let decodedBody = decodeURIComponent(body);
-    let json = decodedBody.replace('JSON-RPC=', '');
-    return JSON.parse(json);
-};
-
-const rpcResponse = (response, err) => {
-    return {
-        id: -1,
-        result: response,
-        error: err
-    };
-};
-
 // puppeteer options
 const opts = {
     devtools: true, // Opens browser dev tools when headless is false
-    headless: true,
+    headless: false, // puppeteer can't parse application/json WITHOUT a browser open - Results in OPTIONS call instead of POST
     slowMo: 0,
     timeout: 10000
 };
@@ -37,42 +22,42 @@ module.exports = async function(){
             // Post requests are normal xhr/call methods
             let payload = '';
             if(request.method() === 'POST'){
-                let rpcBody = rpcRequest(request.postData());
-                switch (rpcBody.method) {
+                let body = JSON.parse(request.postData());
+                switch (body.method) {
                     case 'Authenticate':
                         // Alternate the credential response to test forget()
                         if(authenticationAttempts%2===0){
-                            payload = mocks.credentials;
+                            payload = { result: mocks.credentials};
                             authenticationAttempts++;
                         } else {
-                            payload = mocks.refreshedCredentials;
+                            payload = { result: mocks.refreshedCredentials};
                             authenticationAttempts++;
                         }
                         break;
                     case 'Get':
-                        switch (rpcBody.params.typeName) {
+                        switch (body.params.typeName) {
                             case 'Device':
-                                payload = [mocks.device];
+                                payload = { result: [mocks.device]};
                                 break;
                             case 'User':
-                                payload = [mocks.user];
+                                payload = { result: [mocks.user]};
                                 break;
                         }
                         break;
                     case 'Geet':
                         // Poorly formed request tests
-                        payload = {
+                        payload = { result: {
                             name: "InvalidCall",
                             message: "Bad info entered"
-                        }
+                        }}
                         break;
                     case 'ExecuteMultiCall':
                         // Looping each of the calls
-                        rpcBody.params.calls.forEach( call => {
+                        body.params.calls.forEach( call => {
                             switch(call.method){
                                 case 'GetCountOf':
                                     // Stripped down to basics for ease of testing
-                                    payload = [2000, 2001];
+                                    payload = {result: [2000, 2001]};
                                 break;
                             }
                         })
@@ -81,19 +66,21 @@ module.exports = async function(){
                 request.respond({
                     content: 'application/json',
                     headers: { 'Access-Control-Allow-Origin': '*' },
-                    body: JSON.stringify(rpcResponse(payload))
+                    body: JSON.stringify(payload)
                 }); 
             } 
         } else if(request.url().includes('badinfo')){
             payload = {
-                name: "InvalidUserException",
-                message: "Bad info entered"
+                error: {
+                    name: "InvalidUserException",
+                    message: "Bad info entered"
+                }
             }
 
             request.respond({
                 content: 'application/json',
                 headers: { 'Access-Control-Allow-Origin': '*'},
-                body: JSON.stringify(rpcResponse(undefined, payload))
+                body: JSON.stringify(payload)
             });
         } else {
             request.continue();
