@@ -19,16 +19,16 @@ var credentials = {
     database: login.database,
     sessionId: '3225932739582116430',
     userName: login.userName,
-    server: 'ThisServer'
-  }
+  },
+  path: 'ThisServer'
 };
 var refreshedCredentials = {
   credentials: {
     database: login.database,
     sessionId: '3225932739582116431',
     userName: login.userName,
-    server: 'ThisServer'
-  }
+  },
+  path: 'ThisServer'
 }
 var device = {
   id: 'test1',
