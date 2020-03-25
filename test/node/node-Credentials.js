@@ -80,40 +80,40 @@ describe('User loads GeotabApi node module with credentials', async () => {
         assert.equal(server, 'ThisServer', 'Server is not matching expected output')        
     });
 
-    // it('Api should run multicall (callback)', async () => {
-    //     let api = await new GeotabApi(mocks.login, {rememberMe: false});
-    //     let getPromise = new Promise( (resolve, reject) => {
-    //         let calls = [
-    //             ["GetCountOf", { typeName: "Device" }],
-    //             ["GetCountOf", { typeName: "User" }]
-    //         ];
-    //         api.multiCall(calls, function(result){
-    //             resolve(result);
-    //         }, function(error){
-    //             reject(error);
-    //         });
-    //     });
+    it('Api should run multicall (callback)', async () => {
+        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let getPromise = new Promise( (resolve, reject) => {
+            let calls = [
+                ["GetCountOf", { typeName: "Device" }],
+                ["GetCountOf", { typeName: "User" }]
+            ];
+            api.multiCall(calls, function(result){
+                resolve(result);
+            }, function(error){
+                reject(error);
+            });
+        });
 
-    //     let result = await getPromise
-    //         .then( response => response)
-    //         .catch( err => console.log(err));
+        let result = await getPromise
+            .then( response => response)
+            .catch( err => console.log(err));
         
-    //     assert.isTrue(result.length > 0, 'Multicall did not return list');
-    // });
+        assert.isTrue(result.length > 0, 'Multicall did not return list');
+    });
 
-    // it('Api should run multi call (async)', async () => {
-    //     let api = await new GeotabApi(mocks.login, {rememberMe: false});
-    //     let calls = [
-    //         ["GetCountOf", { typeName: "Device" }],
-    //         ["GetCountOf", { typeName: "User" }]
-    //     ];
-    //     let multicall = api.multiCall(calls);
-    //     // multicall returns a promise
-    //     let response =await multicall
-    //         .then( result => result.data.result )
-    //         .catch( err => console.log(err));
-    //     assert.isTrue( response.length === 2, 'Response does not match expected output');
-    // });
+    it('Api should run multi call (async)', async () => {
+        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let calls = [
+            ["GetCountOf", { typeName: "Device" }],
+            ["GetCountOf", { typeName: "User" }]
+        ];
+        let multicall = api.multiCall(calls);
+        // multicall returns a promise
+        let response =await multicall
+            .then( result => result.data.result )
+            .catch( err => console.log(err));
+        assert.isTrue( response.length === 2, 'Response does not match expected output');
+    });
 
     it('Api should run forget', async () => {
         let api = await new GeotabApi(mocks.login, {rememberMe: true});
