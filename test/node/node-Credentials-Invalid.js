@@ -19,17 +19,12 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
             username: login.username,
             password: login.password
         }, {rememberMe: false})
-            .catch( err => console.log('err:', err.message));
 
-        let result;
-        try {
-            result = api.call('Get', {typeName: 'Device'})
-                .then( result => result)
-                .catch( err => err)
-        } catch(err){
-          result = err.message;
-        }
-        assert.isTrue(result === 'api.call is not a function', 'Given credentials accepted as valid');
+        let result = await api.call('Get', {typeName: 'Device'})
+            .then( result => result)
+            .catch( err => err)
+
+        assert.isTrue(result.error.name === 'InvalidUserException', 'Given credentials accepted as valid');
     });
         
     it('Api should gracefully handle a call failure (Callback)', async () => {
@@ -52,6 +47,7 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         let response = await callPromise
                         .then( resolved => resolved )
                         .catch( error => error );
+
         assert.isTrue(response.name === 'InvalidRequest', 'Call did not return information');
     });
 
@@ -63,11 +59,12 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
             username: login.username,
             password: login.password
         }, {rememberMe: false});
+
         // api.call returns a promise
         let call = api.call('Geet', {typeName: 'Device'});
         let response = await call
-                            .then( result => result.data )
-                            .catch( err => err.data);
-        assert.isTrue(response.error.name === 'InvalidRequest', 'Promise response undefined');
+                            .then( result => result )
+                            .catch( err => err );
+        assert.isTrue(response.data.error.name === 'InvalidRequest', 'Promise response undefined');
     });
 });

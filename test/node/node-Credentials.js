@@ -1,6 +1,7 @@
 const assert = require('chai').assert;
 const GeotabApi = require('../../dist/api');
 const mocks = require('../mocks/mocks');
+const LocalStorageCredentialStore = require('../../lib/LocalStorageCredentialStore').default;
 require('./nocks/nock');
 require('source-map-support').install();
 
@@ -70,103 +71,67 @@ describe('User loads GeotabApi node module with credentials', async () => {
         await call.then( response => {
             // Response should have a .then appended in the api to add the server
             // to the result
-            credentials = response.data.result[0];
-            server = response.data.result[1];
+            credentials = response.data.result.credentials;
+            server = response.data.result.path;
         })
         .catch( err => console.log(err));
 
         assert.isObject(credentials, 'Credentials not properly received');
-        assert.equal(server, 'www.myaddin.com', 'Server is not matching expected output')        
+        assert.equal(server, 'ThisServer', 'Server is not matching expected output')        
     });
 
-    it('Api should run multicall (callback)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
-        let getPromise = new Promise( (resolve, reject) => {
-            let calls = [
-                ["GetCountOf", { typeName: "Device" }],
-                ["GetCountOf", { typeName: "User" }]
-            ];
-            api.multiCall(calls, function(result){
-                resolve(result);
-            }, function(error){
-                reject(error);
-            });
-        });
+    // it('Api should run multicall (callback)', async () => {
+    //     let api = await new GeotabApi(mocks.login, {rememberMe: false});
+    //     let getPromise = new Promise( (resolve, reject) => {
+    //         let calls = [
+    //             ["GetCountOf", { typeName: "Device" }],
+    //             ["GetCountOf", { typeName: "User" }]
+    //         ];
+    //         api.multiCall(calls, function(result){
+    //             resolve(result);
+    //         }, function(error){
+    //             reject(error);
+    //         });
+    //     });
 
-        let result = await getPromise
-            .then( response => response)
-            .catch( err => console.log(err));
+    //     let result = await getPromise
+    //         .then( response => response)
+    //         .catch( err => console.log(err));
         
-        assert.isTrue(result.length > 0, 'Multicall did not return list');
-    });
+    //     assert.isTrue(result.length > 0, 'Multicall did not return list');
+    // });
 
-    it('Api should run multi call (async)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
-        let calls = [
-            ["GetCountOf", { typeName: "Device" }],
-            ["GetCountOf", { typeName: "User" }]
-        ];
-        let multicall = api.multiCall(calls);
-        // multicall returns a promise
-        let response =await multicall
-            .then( result => result.data.result )
-            .catch( err => console.log(err));
-        assert.isTrue( response.length === 2, 'Response does not match expected output');
-    });
+    // it('Api should run multi call (async)', async () => {
+    //     let api = await new GeotabApi(mocks.login, {rememberMe: false});
+    //     let calls = [
+    //         ["GetCountOf", { typeName: "Device" }],
+    //         ["GetCountOf", { typeName: "User" }]
+    //     ];
+    //     let multicall = api.multiCall(calls);
+    //     // multicall returns a promise
+    //     let response =await multicall
+    //         .then( result => result.data.result )
+    //         .catch( err => console.log(err));
+    //     assert.isTrue( response.length === 2, 'Response does not match expected output');
+    // });
 
     it('Api should run forget', async () => {
         let api = await new GeotabApi(mocks.login, {rememberMe: true});
-        let sessionPromise = new Promise( (resolve, reject) => {
-            try {
-                api.getSession( (credentials, server) => {
-                    resolve([credentials, server]);
-                });  
-            } catch (err) {
-                reject(err);
-            }
-        });
-        // Awaiting the session promise to ensure we get the response
-        let auth1 = await sessionPromise
-            .then( (response) => response )
-            .catch( (err) => console.log(err) );  
-        await api.forget();
-        let sessionPromise2 = new Promise( (resolve, reject) => {
-            try {
-                api.getSession( (credentials, server) => {
-                    resolve([credentials, server]);
-                });  
-            } catch (err) {
-                reject(err);
-            }
-        });
-        // Awaiting the session promise to ensure we get the response
-        let auth2 = await sessionPromise2
-            .then( (response) => response )
-            .catch( (err) => console.log(err) );     
-        assert.notEqual(auth1[0].sessionId, auth2[0].sessionId, 'Session did not refresh');
+        let auth1 = await api.getSession().then( response => response.data.result.credentials.sessionId );
+        let auth2 = await api.forget().then( response => response.data.result.credentials.sessionId );
+        assert.notEqual(auth1, auth2, 'Session did not refresh');
     });
     
-    it('Should run forget (Promise)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
-        let sess1 = await api.getSession()
-                        .then(result => result.data.result[0].sessionId)
-                        .catch(err => console.log(err));
-        // Forget will return a promise with new credentials
-        let sess2 = await api.forget()
-                        .then( result => result.data.result[0].sessionId)
-                        .catch( err => console.log(err));
-        assert.isTrue( sess1 !== sess2, 'Sessions did not update properly');
-    });
-
     it('Api rememberMe should function properly', async () => {
-        let api1 = await new GeotabApi(mocks.login, {rememberMe: true});
-        let api2 = await new GeotabApi(mocks.login, {rememberMe: true});
-        let sess1 = await api1.getSession()
-                                .then(response => response[0].sessionId)
-                                .catch(err => console.log(err));
-        let sess2 = await api2.getSession()
-                                .then(response => response[0].sessionId)
-                                .catch(err => console.log(err));
-        assert.isTrue( sess1 === sess2, 'Session IDs do not match');
+        let localStorage = new LocalStorageCredentialStore();
+        let rememberCredentials = {
+            sessionId: 123456,
+            userName: 'testUser',
+            database: 1
+        }
+        localStorage.set(rememberCredentials, 'testServer');
+        let api = new GeotabApi(mocks.login, {rememberMe: true, newCredentialStore: localStorage});
+        let session = await api.getSession();
+        assert.equal(rememberCredentials.sessionId, session.credentials.sessionId, 'SessionIDs are not remembered');
     });
 });
