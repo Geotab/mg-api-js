@@ -1,6 +1,13 @@
 const puppeteer = require('puppeteer');
 const mocks = require('../mocks/mocks.js');
 
+// JSON-RPC helpers
+const rpcRequest = body => {
+    let decodedBody = decodeURIComponent(body);
+    let json = decodedBody.replace('JSON-RPC=', '');
+    return JSON.parse(json);
+};
+
 // puppeteer options
 const opts = {
     devtools: true, // Opens browser dev tools when headless is false
@@ -22,7 +29,7 @@ module.exports = async function(){
             // Post requests are normal xhr/call methods
             let payload = '';
             if(request.method() === 'POST'){
-                let body = JSON.parse(request.postData());
+                let body = rpcRequest(request.postData());
                 switch (body.method) {
                     case 'Authenticate':
                         // Alternate the credential response to test forget()

@@ -47,8 +47,8 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let api = await new GeotabApi(mocks.login, {rememberMe: false});        
         let sessionPromise = new Promise( (resolve, reject) => {
             try {
-                api.getSession( (credentials, server) => {
-                    resolve([credentials, server]);
+                api.getSession( (credentials) => {
+                    resolve(credentials);
                 });  
             } catch (err) {
                 reject(err);
@@ -57,10 +57,9 @@ describe('User loads GeotabApi node module with credentials', async () => {
         // Awaiting the session promise to ensure we get the response
         let auth = await sessionPromise
             .then( (response) => response )
-            .catch( (err) => console.log(err) );        
-
-        assert.isObject(auth[0], 'Credentials not properly received');
-        assert.equal(auth[1], 'www.myaddin.com', 'Server is not matching expected output')        
+            .catch( (err) => console.log(err) );
+        assert.isTrue(auth.credentials.userName === 'testUser@test.com', 'Credentials not properly received');
+        assert.equal(auth.path, 'ThisServer', 'Server is not matching expected output')        
     });
 
     it('Api should successfully run getSession (Async)', async () =>{

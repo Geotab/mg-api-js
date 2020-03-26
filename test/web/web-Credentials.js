@@ -69,8 +69,8 @@ describe('User loads web api with credentials', () => {
             // Using a promise to make it wait
             let sessionPromise = new Promise( (resolve, reject) => {
                 try {
-                    api.getSession( (credentials, server) => {
-                        resolve([credentials, server]);
+                    api.getSession( (credentials) => {
+                        resolve(credentials);
                     });  
                 } catch (err) {
                     reject(err);
@@ -78,18 +78,13 @@ describe('User loads web api with credentials', () => {
             });
 
             // Awaiting the session promise to ensure we get the response
-            let auth = await sessionPromise
-                .then( (response) => {
-                    return response;
-                })
-                .catch( (err) => { 
-                    console.log(err);
-                });
+            let auth = await sessionPromise.then( response => response )
+                                            .catch( error => error );
             return auth;
+        }, mocks.login);
 
-        }, mocks.login)
-        assert.isObject(auth[0], 'Credentials not properly received');
-        assert.equal(auth[1], 'www.myaddin.com', 'Server is not matching expected output');
+        assert.isTrue(auth.credentials.database === 'testDB', 'Credentials not properly received');
+        assert.equal(auth.path, 'ThisServer', 'Server is not matching expected output');
     });
 
     it('Api should successfully run getSession (async)', async () => {
@@ -101,15 +96,15 @@ describe('User loads web api with credentials', () => {
                 .then( response => {
                     // Response should have a .then appended in the api to add the server
                     // to the result
-                    credentials = response.data.result[0];
-                    server = response.data.result[1];
+                    credentials = response.data.result.credentials;
+                    server = response.data.result.path;
                 })
                 .catch( err => console.log(err));
             return [credentials, server];    
         }, mocks.login);
-
+        
         assert.isObject(credentials, 'Credentials not properly received');
-        assert.equal(server, 'www.myaddin.com', 'Server is not matching expected output');
+        assert.equal(server, 'ThisServer', 'Server is not matching expected output');
     });
 
     it('Api should run multicall (callback)', async () => {
@@ -158,67 +153,13 @@ describe('User loads web api with credentials', () => {
 
     it('Api should run forget', async () => {
         let result = await page.evaluate( async (login) => {
-            let api = await new GeotabApi(login, {rememberMe: false})
-
-            let firstSession = new Promise( (resolve, reject) => {
-                try {
-                    api.getSession( (credentials, server) => {
-                        resolve([credentials, server]);
-                    });  
-                } catch (err) {
-                    reject(err);
-                }
-            });
-
-            let secondSession = new Promise( (resolve, reject) => {
-                try {
-                    api.getSession( (credentials, server) => {
-                        resolve([credentials, server]);
-                    });  
-                } catch (err) {
-                    reject(err);
-                }
-            });
-
-            // Before forgetting the session
-            let firstID = await firstSession
-                .then( async (response) => {
-                    // Forgetting the session once we have the first one confirmed
-                    await api.forget();
-                    return response;
-                })
-                .catch( (err) => { 
-                    console.log(err);
-                })
-
-            // After forgetting and renewing the session
-            let secondID = await secondSession
-                .then( (response) => {
-                    return response;
-                })
-                .catch( (err) => {
-                    console.log(err);
-                });
-
-            return firstID === secondID;
+            let api = await new GeotabApi(login, {rememberMe: true});
+            let auth1 = await api.getSession().then( response => response.data.result.credentials.sessionId );
+            let auth2 = await api.forget().then( response => response.data.result.credentials.sessionId );
+            return [auth1, auth2];
         }, mocks.login);
-        assert.isFalse(result, 'Session ID\'s are the same');
+        assert.isFalse(result[0] === result[1], 'Session ID\'s are the same');
     });
-
-    it('Api should run forget (async)', async () => {
-        let [sess1, sess2] = await page.evaluate( async (login) => {
-            let api = await new GeotabApi(login, {rememberMe: false})
-            let sess1 = await api.getSession()
-                .then(result => result.data.result[0].sessionId)
-                .catch(err => console.log(err));
-            // Forget will return a promise with new credentials
-            let sess2 = await api.forget()
-                .then( result => result.data.result[0].sessionId)
-                .catch( err => console.log(err));
-            return [sess1, sess2];
-        }, mocks.login);
-        assert.isTrue(sess1 !== sess2, 'Session IDs are the same');
-    })
 
     it('Api rememberMe should function properly', async () => {
         let result = await page.evaluate( async (login) => {
@@ -232,7 +173,6 @@ describe('User loads web api with credentials', () => {
                                     .catch(err => console.log(err));
             return [sess1, sess2];
         }, mocks.login);
-
         assert.isTrue( result[0] === result[1], 'Session IDs do not match');
     });
 //#region Test to fail
@@ -245,8 +185,8 @@ it('Should return errors with incorrect credentials', async () => {
             username: 'badinfo',
             password: 'badinfo'
         }, {rememberMe: false});
-       
-        return api;
+        let callResult = api.call('Get', {typeName: 'Devices'}).then(result => result);
+        return callResult;
     });
     assert.equal(result.error.name, 'InvalidUserException', 'API does not fail');
 });
@@ -257,7 +197,6 @@ it('Api should gracefully handle call errors', async () => {
         let apiError;
         login.error = (err) => apiError = err;
         let api = await new GeotabApi(login, {rememberMe: false});
-
         let getPromise = new Promise( (resolve, reject) => {
             let response;
             // Malformed call
@@ -285,7 +224,6 @@ it('Api should gracefully handle call errors', async () => {
         let result = await getPromise
             .then( response => response)
             .catch( err => err);
-
         return result;
     }, mocks.login);
     assert.equal(result.name, 'InvalidCall', 'API does not fail on malformed calls');
