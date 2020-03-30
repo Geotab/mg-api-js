@@ -11,7 +11,7 @@ const rpcRequest = body => {
 // puppeteer options
 const opts = {
     devtools: true, // Opens browser dev tools when headless is false
-    headless: true, // puppeteer can't parse application/json WITHOUT a browser open - Results in OPTIONS call instead of POST
+    headless: true,
     slowMo: 0,
     timeout: 10000
 };
