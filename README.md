@@ -38,14 +38,14 @@ const authentication = {
 
 ##### With SessionId
 
-If you already have a session, you can pass in the SessionId from that session in place of a password.
-
+If you already have a session, you can pass in the SessionId, and the wrapper will attempt to authenticate using this first.
 
 ```javascript
 const authentication = {
     credentials: {
         database: 'database',
         userName: 'username',
+        password: 'password',
         sessionId: '123456...'
     }
     path: 'serverAddress',
