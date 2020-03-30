@@ -2,9 +2,9 @@ const nock = require('nock');
 const mocks = require('../../mocks/mocks');
 let authenticationAttempt = 0;
 
-// Decodingthe encoded request
-const parseBody = (bodyStr) => {
-    return JSON.parse(bodyStr['JSON-RPC']);
+// RPC Parser
+const parse = (body) => {
+    return JSON.parse(body['JSON-RPC']);
 }
 
 // Authentication
@@ -14,8 +14,8 @@ const auth1 = nock(`https://${mocks.server}/apiv1/`, {
     })
         .persist()
         .post('/Authenticate', (body) => {
-            let parsed = parseBody(body);
-            return parsed.params.database === 'testDB';
+            body = parse(body);
+            return body.params.database === 'testDB';
         })
         .reply(200, () => {
             authenticationAttempt++;
@@ -27,8 +27,8 @@ const auth2 = nock(`https://${mocks.server}/apiv1/`, {
         })
         .persist()
         .post('/Authenticate', (body) => {
-            let parsed = parseBody(body);
-            return parsed.params.database === 'testDB';
+            body = parse(body);
+            return body.params.database === 'testDB';
         })
         .reply(200, () => {
             authenticationAttempt++;
@@ -39,16 +39,16 @@ const auth2 = nock(`https://${mocks.server}/apiv1/`, {
 const auth3 = nock(`https://${mocks.server}/apiv1/`)
         .persist()
         .post('/Authenticate', (body) => {
-            let parsed = parseBody(body);
-            return parsed.params.database === 'badinfo';
+            body = parse(body);
+            return body.params.database === 'badinfo';
         })
         .reply(200, () => {
             authenticationAttempt++;
             return {
-                    error: {
-                        name: "InvalidUserException",
-                        message: "Bad info entered"
-                    }
+                error: {
+                    name: "InvalidUserException",
+                    message: "Bad info entered"
+                }
             }
         })
 
@@ -58,39 +58,43 @@ const get = nock(`https://${mocks.server}/apiv1/`)
 // Device
 get
     .post('/Get', (request) => { 
+        request = parse(request);
         // Checking inbound request to see if it's a device
-        return JSON.parse(request['JSON-RPC'])['params']['typeName'] === 'Device'
+        return request['params']['typeName'] === 'Device'
     })
     .reply(200, {result: mocks.device})
 // User
 get
     .post('/Get', (request) => {
-        return JSON.parse(request['JSON-RPC'])['params']['typeName'] === 'Device'
+        request = parse(request);
+        return request['params']['typeName'] === 'User'
     })
     .reply(200, {result: mocks.user});
 
 // Failing call
 get
     .post('/Geet')
-    .reply(200, {result: {
+    .reply(200, {
         error: {
             name: 'InvalidRequest',
             message: 'Invalid request information entered'
         }
-    }})
+    })
 // GetCountOf Requests
 const getCount = nock(`https://${mocks.server}/apiv1/`)
             .persist()
 
 getCount
     .post('/GetCountOf', (request) => {
-        return JSON.parse(request['JSON-RPC'])['params']['typeName'] === 'Device'
+        request = parse(request);
+        return request['params']['typeName'] === 'Device'
     })
     .reply(200, {result: 2000});
 
 getCount
     .post('/GetCountOf', (request) => {
-        return JSON.parse(request['JSON-RPC'])['params']['typeName'] === 'User'
+        request = parse(request);
+        return request['params']['typeName'] === 'User'
     })
     .reply(200, {result: 2001});
 

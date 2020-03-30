@@ -8,3 +8,4 @@ npm-debug.log
 coverage
 report
 .nyc_output
+dist/*.map
