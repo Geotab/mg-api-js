@@ -20,7 +20,7 @@ Credentials are provided to the wrapper in an authentication object. The authent
 
 ### Authentication (Object)
 
-##### With Password
+#### With Password
 
 If you are connecting with the wrapper for the first time, you must pass a username/password combo of a user on the database you are trying to connect to.
 
@@ -36,7 +36,7 @@ const authentication = {
 ```
 **Note** - *If you do not know the exact server address, this can be omitted when using a password, and will route the initial authentication to `my.geotab.com`*.
 
-##### With SessionId
+#### With SessionId
 
 If you already have a session, you can pass in the SessionId, and the wrapper will attempt to authenticate using this first.
 
@@ -124,7 +124,7 @@ function callback(result){
 
 ### Call
 
-##### Promises
+#### Promises
 In an effort to give you more control over the actual responses, the wrapper will return an [Axios Response Object](https://github.com/axios/axios#response-schema). This object contains several bits of information about the request and it's response, similar to the `fetch()` api. Response data will be held in the data section of the response, as demonstrated in subsequent sections.
 
 Make a request to the database and receive a promise
@@ -141,7 +141,7 @@ myCall
 })
 ```
 
-##### Callbacks
+#### Callbacks
 
 Make a request to the database by providing a success/error callback
 
@@ -162,7 +162,7 @@ api.call('Get', {
 
 Perform multiple queries against the database in a single HTTPS request 
 
-##### Promises
+#### Promises
 
 ```javascript
 let calls = [
@@ -177,7 +177,7 @@ myMultiCall
     .catch(error => console.log(error));
 ```
 
-##### Callbacks
+#### Callbacks
 
 ```javascript
 api.multiCall([
@@ -205,7 +205,7 @@ Clears credentials and the credential store.
 api.forget();
 ```
 
-##### Promises
+#### Promises
 
 Forget also allows a promise to be returned. By default this returns a fresh set of credentials
 
@@ -221,7 +221,7 @@ myForgetCall
 ### GetSession
 Retrieves the API user session. Returns the credentials and server
 
-##### Promises
+#### Promises
 
 ```javascript
 let mySession = api.getSession();
@@ -231,7 +231,7 @@ mySession
     .catch(error => console.log(error));
 ```
 
-##### Callbacks
+#### Callbacks
 
 ```javascript
 api.getSession(function (result) {
@@ -242,14 +242,14 @@ api.getSession(function (result) {
 
 As of v2.0.0, there are several noteable changes that will cause previous implementations of the api wrapper to fail.
 
-##### GeotabApi credential callback
+#### GeotabApi credential callback
 
 Using a credentials callback is no longer an option. All credentials must be passed as an authentication object described above
 
-##### JSONP
+#### JSONP
 
 JSONP is no longer supported both as a function and as an argument in the options parameter
 
-##### GetSession callback object
+#### GetSession callback object
 
 getSession now returns a single result object that maintains consistency with the authentication call response.
