@@ -9,26 +9,28 @@ var user = {
   password: 'Password!23'
 };
 var login = {
-  userName: user.name,
-  password: user.password,
-  database: 'testDB',
-  server: server
+  credentials: {
+    userName: user.name,
+    password: user.password,
+    database: 'testDB',
+  },
+  path: server
 };
 var credentials = {
   credentials: {
-    database: login.database,
+    database: login.credentials.database,
     sessionId: '3225932739582116430',
-    userName: login.userName,
+    userName: login.credentials.userName,
   },
-  path: 'ThisServer'
+  path: server
 };
 var refreshedCredentials = {
   credentials: {
-    database: login.database,
+    database: login.credentials.database,
     sessionId: '3225932739582116431',
-    userName: login.userName,
+    userName: login.credentials.userName,
   },
-  path: 'ThisServer'
+  path: server
 }
 var device = {
   id: 'test1',

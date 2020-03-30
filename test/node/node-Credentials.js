@@ -14,12 +14,12 @@ require('source-map-support').install();
 describe('User loads GeotabApi node module with credentials', async () => {
 
     it('Api should initialize', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
         assert.isDefined(api.call);
     });
 
     it('Api should successfully run a call (Callback)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
         let callPromise = new Promise( (resolve, reject) => {
             api.call('Get', {typeName: 'Device'}, function(success){
                 resolve(success);
@@ -35,7 +35,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
     });
 
     it('Api should successfully run a call (Async)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
         let call = api.call('Get', {typeName: 'Device'});
         let response = await call
                         .then( result => result )
@@ -44,7 +44,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
     })
 
     it('Api should successfully run getSession (Callback)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});        
+        let api = new GeotabApi(mocks.login, {rememberMe: false});        
         let sessionPromise = new Promise( (resolve, reject) => {
             try {
                 api.getSession( (credentials) => {
@@ -58,12 +58,12 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let auth = await sessionPromise
             .then( (response) => response )
             .catch( (err) => console.log(err) );
-        assert.isTrue(auth.credentials.userName === 'testUser@test.com', 'Credentials not properly received');
-        assert.equal(auth.path, 'ThisServer', 'Server is not matching expected output')        
+        assert.isTrue(auth.data.result.credentials.userName === 'testUser@test.com', 'Credentials not properly received');
+        assert.equal(auth.data.result.path, 'www.myaddin.com', 'Server is not matching expected output')        
     });
 
     it('Api should successfully run getSession (Async)', async () =>{
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
         let server, credentials;
         // getSession returns an unresolved promise
         let call = api.getSession();
@@ -76,11 +76,11 @@ describe('User loads GeotabApi node module with credentials', async () => {
         .catch( err => console.log(err));
 
         assert.isObject(credentials, 'Credentials not properly received');
-        assert.equal(server, 'ThisServer', 'Server is not matching expected output')        
+        assert.equal(server, 'www.myaddin.com', 'Server is not matching expected output')        
     });
 
     it('Api should run multicall (callback)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
         let getPromise = new Promise( (resolve, reject) => {
             let calls = [
                 ["GetCountOf", { typeName: "Device" }],
@@ -101,7 +101,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
     });
 
     it('Api should run multi call (async)', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: false});
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
         let calls = [
             ["GetCountOf", { typeName: "Device" }],
             ["GetCountOf", { typeName: "User" }]
@@ -115,7 +115,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
     });
 
     it('Api should run forget', async () => {
-        let api = await new GeotabApi(mocks.login, {rememberMe: true});
+        let api = new GeotabApi(mocks.login, {rememberMe: true});
         let auth1 = await api.getSession().then( response => response.data.result.credentials.sessionId );
         let auth2 = await api.forget().then( response => response.data.result.credentials.sessionId );
         assert.notEqual(auth1, auth2, 'Session did not refresh');
@@ -131,6 +131,6 @@ describe('User loads GeotabApi node module with credentials', async () => {
         localStorage.set(rememberCredentials, 'testServer');
         let api = new GeotabApi(mocks.login, {rememberMe: true, newCredentialStore: localStorage});
         let session = await api.getSession();
-        assert.equal(rememberCredentials.sessionId, session.credentials.sessionId, 'SessionIDs are not remembered');
+        assert.equal(rememberCredentials.sessionId, session.data.result.credentials.sessionId, 'SessionIDs are not remembered');
     });
 });
