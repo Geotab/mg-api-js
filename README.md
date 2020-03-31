@@ -88,6 +88,26 @@ At minimum, the datastore must have the following methods:
 
 ## Methods
 
+In an effort to give you more control over the actual responses, the wrapper will return an [Axios Response Object](https://github.com/axios/axios#response-schema). This object contains several bits of information about the request and it's response. Response data will be held in the `data` section of the response:
+
+```javascript
+api.call('Get', { typeName: 'Device', resultsLimit: 100 })
+    .then( response => response.data )
+    .then( data => {
+        // data.result and data.error are the two outcomes of a call to the server
+        let serverResponse = data.result || data.error;
+    });
+```
+
+Using callbacks will allow you to pass in your own logic to be executed when the call is complete. The standard pattern for callback responses is as follows:
+
+```javascript
+function callback(result){
+    //Your response logic
+    console.log(result)
+}
+```
+
 ### Authentication
 
 The api by default will authenticate when the first call is run. However, if you want to expedite the process, you can use the authenticate method with promises or callbacks:
@@ -103,29 +123,9 @@ api.authenticate( (success) => {
 })
 ```
 
-To create an instance of the GeotabApi, you must provide at minimum an authentication object. This object can either contain a password, or a sessionId:
-
-| Parameter | type | Default |
-| --- | --- | --- |
-| authentication | `object` | |
-| options | `object` |  |
-
-
-Using callbacks will allow you to pass in your own logic to be executed when the call is complete.
-
-The standard pattern for callback responses is as follows:
-
-```javascript
-function callback(result){
-    //Your response logic
-    console.log(result)
-}
-```
-
 ### Call
 
 #### Promises
-In an effort to give you more control over the actual responses, the wrapper will return an [Axios Response Object](https://github.com/axios/axios#response-schema). This object contains several bits of information about the request and it's response, similar to the `fetch()` api. Response data will be held in the data section of the response, as demonstrated in subsequent sections.
 
 Make a request to the database and receive a promise
 ```javascript
@@ -135,7 +135,7 @@ let myCall = api.call('Get', {
 });
 
 myCall
-    .then( result => result.data)
+    .then( response => response.data)
     .then( data => console.log(`Server response data: ${data}`))
     .catch( error => console.log(error));
 })
@@ -172,7 +172,7 @@ let calls = [
 let myMultiCall = api.multiCall(calls)
 
 myMultiCall
-    .then(result => result.data)
+    .then(response => response.data)
     .then(data => console.log(`Server response: ${data}`))
     .catch(error => console.log(error));
 ```
@@ -213,7 +213,7 @@ Forget also allows a promise to be returned. By default this returns a fresh set
 let myForgetCall = api.forget();
 
 myForgetCall
-    .then(result => result.data)
+    .then(response => response.data)
     .then(data => console.log(`Server response: ${data}`))
     .catch(error => console.log(error));
 ```
@@ -226,7 +226,7 @@ Retrieves the API user session. Returns the credentials and server
 ```javascript
 let mySession = api.getSession();
 mySession
-    .then(result => result.data)
+    .then(response => response.data)
     .then(data => console.log(`Server response: ${data}`))
     .catch(error => console.log(error));
 ```
