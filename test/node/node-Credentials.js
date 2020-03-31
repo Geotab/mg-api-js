@@ -108,7 +108,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
         ];
         let multicall = api.multiCall(calls);
         // multicall returns a promise
-        let response =await multicall
+        let response = await multicall
             .then( result => result.data.result )
             .catch( err => console.log(err));
         assert.isTrue( response.length === 2, 'Response does not match expected output');
@@ -122,15 +122,37 @@ describe('User loads GeotabApi node module with credentials', async () => {
     });
     
     it('Api rememberMe should function properly', async () => {
-        let localStorage = new LocalStorageCredentialStore();
-        let rememberCredentials = {
-            sessionId: 123456,
-            userName: 'testUser',
-            database: 1
-        }
-        localStorage.set(rememberCredentials, 'testServer');
-        let api = new GeotabApi(mocks.login, {rememberMe: true, newCredentialStore: localStorage});
+        let auth = mocks.login;
+        auth.credentials.sessionId = '123456';
+        let api = new GeotabApi(auth, {rememberMe: true});
         let session = await api.getSession();
-        assert.equal(rememberCredentials.sessionId, session.data.result.credentials.sessionId, 'SessionIDs are not remembered');
+        assert.equal(auth.credentials.sessionId, session.data.result.credentials.sessionId, 'SessionIDs are not remembered');    
+    });
+
+    it('Should take a custom CredentialStore', async () => {
+        // Custom store with custom behaviour
+        let store = {
+            get: () => {
+                return {
+                    credentials: {
+                      userName: 'Custom',
+                      password: 'Store',
+                      database: 'testDB',
+                      sessionId: '000000'
+                    },
+                    path: 'CustomStore'
+                  }
+            },
+            set: () => {/* Custom Set - ignores default behavior to set with provided credentials */},
+            clear: () => {},
+            custom: () => {}
+        };
+
+        let api = new GeotabApi(mocks.login, {rememberMe: true, newCredentialStore: store});
+        let sessionId = await api.getSession()
+            .then( result => result.data)
+            .then( data => data.result.credentials.sessionId)
+            .catch( err => err);
+        assert.equal(sessionId, '000000', 'SessionId being updated and returned instead of following custom store logic');
     });
 });
