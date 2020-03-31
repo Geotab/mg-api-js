@@ -55,7 +55,7 @@ const authentication = {
 
 ### Options *(optional)*
 
-This optional parameter allows you to define some default behaviour of the api:
+This optional parameter allows you to define some default behavior of the api:
 
 | Argument | Type | Description | Default |
 | --- | --- | --- | --- |
