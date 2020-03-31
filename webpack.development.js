@@ -34,6 +34,7 @@ module.exports = merge(common, {
         contentBase: path.join(__dirname),
         compress: true,
         port: 9000,
-        index: './test/web/index.html'
+        index: './test/web/index.html',
+        writeToDisk: true
     }
 });
