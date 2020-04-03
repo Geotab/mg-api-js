@@ -14,10 +14,11 @@ const opts = {
     timeout: 10000,
     args: [
         // Something about headless mode makes the application/json call trip off a CORS request.
+        // A headed browser may convert all content-types to one of the allowed values
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Examples_of_access_control_scenarios
         // Configuring the request to respond to the preflight OPTIONS should also have worked, but this
         // workaround is far easier and faster
-        '--disable-web-security',
+        '--disable-web-security'
       ]
 };
 
