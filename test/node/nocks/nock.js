@@ -4,6 +4,7 @@ let authenticationAttempt = 0;
 
 // RPC Parser
 const parse = (body) => {
+    console.log(body);
     return JSON.parse(body['JSON-RPC']);
 }
 
@@ -13,9 +14,8 @@ const auth1 = nock(`https://${mocks.server}/apiv1/`, {
         conditionally: () => authenticationAttempt % 2 === 0
     })
         .persist()
-        .post('/Authenticate', (body) => {
-            body = parse(body);
-            return body.params.database === 'testDB';
+        .post('/', (body) => {
+            return body.params.database === 'testDB' && body.method === 'Authenticate';
         })
         .reply(200, () => {
             authenticationAttempt++;
@@ -26,9 +26,8 @@ const auth2 = nock(`https://${mocks.server}/apiv1/`, {
             conditionally: () => authenticationAttempt % 2 === 1
         })
         .persist()
-        .post('/Authenticate', (body) => {
-            body = parse(body);
-            return body.params.database === 'testDB';
+        .post('/', (body) => {
+            return body.params.database === 'testDB' && body.method === 'Authenticate';
         })
         .reply(200, () => {
             authenticationAttempt++;
@@ -38,9 +37,8 @@ const auth2 = nock(`https://${mocks.server}/apiv1/`, {
 // Bad credentials test case
 const auth3 = nock(`https://${mocks.server}/apiv1/`)
         .persist()
-        .post('/Authenticate', (body) => {
-            body = parse(body);
-            return body.params.database === 'badinfo';
+        .post('/', (body) => {
+            return body.params.database === 'badinfo' && body.method === 'Authenticate';
         })
         .reply(200, () => {
             authenticationAttempt++;
@@ -57,23 +55,23 @@ const get = nock(`https://${mocks.server}/apiv1/`)
             .persist()
 // Device
 get
-    .post('/Get', (request) => { 
-        request = parse(request);
-        // Checking inbound request to see if it's a device
-        return request['params']['typeName'] === 'Device'
+    .post('/', (body) => { 
+        // Checking inbound body to see if it's a device
+        return body.params.typeName === 'Device' && body.method === 'Get'
     })
     .reply(200, {result: mocks.device})
 // User
 get
-    .post('/Get', (request) => {
-        request = parse(request);
-        return request['params']['typeName'] === 'User'
+    .post('/', (body) => {
+        return body.params.typeName === 'User' && body.method === 'Get';
     })
     .reply(200, {result: mocks.user});
 
 // Failing call
 get
-    .post('/Geet')
+    .post('/', (body) => {
+        return body.method === 'Geet';
+    })
     .reply(200, {
         error: {
             name: 'InvalidRequest',
@@ -85,20 +83,20 @@ const getCount = nock(`https://${mocks.server}/apiv1/`)
             .persist()
 
 getCount
-    .post('/GetCountOf', (request) => {
-        request = parse(request);
-        return request['params']['typeName'] === 'Device'
+    .post('/GetCountOf', (body) => {
+        return body.params.typeName === 'Device' && body.method === 'GetCountOf';
     })
     .reply(200, {result: 2000});
 
 getCount
-    .post('/GetCountOf', (request) => {
-        request = parse(request);
-        return request['params']['typeName'] === 'User'
+    .post('/GetCountOf', (body) => {
+        return body.params.typeName === 'User' && body.method === 'GetCountOf';
     })
     .reply(200, {result: 2001});
 
 const multiCall = nock(`https://${mocks.server}/apiv1/`)
                 .persist()
-                .post('/ExecuteMultiCall')
+                .post('/', (body) => {
+                    return body.method === 'ExecuteMultiCall'
+                })
                 .reply(200, {result: [2000, 2001]})

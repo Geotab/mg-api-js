@@ -2,10 +2,8 @@ const puppeteer = require('puppeteer');
 const mocks = require('../mocks/mocks.js');
 
 // JSON-RPC helpers
-const rpcRequest = body => {
-    let decodedBody = decodeURIComponent(body);
-    let json = decodedBody.replace('JSON-RPC=', '');
-    return JSON.parse(json);
+const parseRequest = body => {
+    return JSON.parse(body);
 };
 
 // puppeteer options
@@ -13,7 +11,14 @@ const opts = {
     devtools: true, // Opens browser dev tools when headless is false
     headless: true,
     slowMo: 0,
-    timeout: 10000
+    timeout: 10000,
+    args: [
+        // Something about headless mode makes the application/json call trip off a CORS request.
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Examples_of_access_control_scenarios
+        // Configuring the request to respond to the preflight OPTIONS should also have worked, but this
+        // workaround is far easier and faster
+        '--disable-web-security',
+      ]
 };
 
 let authenticationAttempts = 0;
@@ -29,7 +34,7 @@ module.exports = async function(){
             // Post requests are normal xhr/call methods
             let payload = '';
             if(request.method() === 'POST'){
-                let body = rpcRequest(request.postData());
+                let body = parseRequest(request.postData());
                 switch (body.method) {
                     case 'Authenticate':
                         // Alternate the credential response to test forget()
@@ -93,7 +98,7 @@ module.exports = async function(){
             request.continue();
         }
     });
-    await page.goto('http://127.0.0.1:9000/test/web/');
+    await page.goto('http://localhost:9000/test/web/');
     // es6 destructuring
     return [browser, page];
 }
