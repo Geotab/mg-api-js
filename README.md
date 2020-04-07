@@ -62,7 +62,7 @@ This optional parameter allows you to define some default behavior of the api:
 | rememberMe | *boolean* | Determines whether or not to store the credentials/session in the datastore | `true` |
 | timeout | *number* | The length of time the wrapper will wait for a response from the server (in seconds) | `3` |
 | newCredentialStore | *object* | Overrides the default datastore for remembered credentials/sessions | `false` |
-| fullResponse | *object* | Removes error handling and provides full [Axios Response Object](https://github.com/axios/axios#response-schema). More information in the **Axios Response section** | `false` |
+| fullResponse | *boolean* | Removes error handling and provides full [Axios Response Object](https://github.com/axios/axios#response-schema). More information in the **Axios Response section** | `false` |
 
 Example options object: 
 
@@ -139,7 +139,6 @@ let myCall = api.call('Get', {
 });
 
 myCall
-    .then( response => response.data)
     .then( data => console.log(`Server response data: ${data}`))
     .catch( error => console.log(error));
 })
@@ -176,7 +175,6 @@ let calls = [
 let myMultiCall = api.multiCall(calls)
 
 myMultiCall
-    .then(response => response.data)
     .then(data => console.log(`Server response: ${data}`))
     .catch(error => console.log(error));
 ```
@@ -217,7 +215,6 @@ Forget also allows a promise to be returned. By default this returns a fresh set
 let myForgetCall = api.forget();
 
 myForgetCall
-    .then(response => response.data)
     .then(data => console.log(`Server response: ${data}`))
     .catch(error => console.log(error));
 ```
@@ -230,7 +227,6 @@ Retrieves the API user session. Returns the credentials and server
 ```javascript
 let mySession = api.getSession();
 mySession
-    .then(response => response.data)
     .then(data => console.log(`Server response: ${data}`))
     .catch(error => console.log(error));
 ```
@@ -268,8 +264,6 @@ api.call('Get', {typeName: 'Device', resultsLimit: 10})
     })
     .catch( err => console.log(err) );
 ```
-
-
 
 ## Breaking Changes
 
