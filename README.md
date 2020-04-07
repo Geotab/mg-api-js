@@ -62,6 +62,7 @@ This optional parameter allows you to define some default behavior of the api:
 | rememberMe | *boolean* | Determines whether or not to store the credentials/session in the datastore | `true` |
 | timeout | *number* | The length of time the wrapper will wait for a response from the server (in seconds) | `3` |
 | newCredentialStore | *object* | Overrides the default datastore for remembered credentials/sessions | `false` |
+| fullResponse | *object* | Removes error handling and provides full [Axios Response Object](https://github.com/axios/axios#response-schema). More information in the **Axios Response section** | `false` |
 
 Example options object: 
 
@@ -88,14 +89,17 @@ At minimum, the datastore must have the following methods:
 
 ## Methods
 
-In an effort to give you more control over the actual responses, the wrapper will return an [Axios Response Object](https://github.com/axios/axios#response-schema). This object contains several bits of information about the request and it's response. Response data will be held in the `data` section of the response:
+By default, all methods and callbacks will return the results of the call directly. Errors are also handled by the wrapper. If you need more control over the call results, see the **Axios Response** section below.
 
 ```javascript
 api.call('Get', { typeName: 'Device', resultsLimit: 100 })
-    .then( response => response.data )
-    .then( data => {
-        // data.result and data.error are the two outcomes of a call to the server
-        let serverResponse = data.result || data.error;
+    .then( result => {
+        // Result is the information returned by the server. In this case, it's the 100 devices.
+        console.log(result);
+    })
+    .catch( error => {
+        // some form of error occured with the request
+        console.log(error);
     });
 ```
 
@@ -238,6 +242,35 @@ api.getSession(function (result) {
     console.log(result.credentials, result.path);
 });
 ```
+
+## Axios Responses
+**Note:** *This will disable all error checking in the GeotabApi wrapper*
+In an effort to give you more control over the actual responses, the wrapper can be configured to return an [Axios Response Object](https://github.com/axios/axios#response-schema). This object contains several bits of information about the request and it's response. Response data will be held in the `data` section of the response.
+
+To enable full response data, simply add the `fullResponse: true` to the options object when constructing the `GeotabApi` object:
+```javascript
+const GeotabApi = require('mg-api-js');
+const opts = {
+    fullResponse: true
+}
+const api = new GeotabApi(authentication, opts);
+```
+
+If the call to the database is successful, but there is an error with the call itself, the server will return an error object that contains specifics about what went wrong.:
+
+```javascript
+api.call('Get', {typeName: 'Device', resultsLimit: 10})
+    .then( response => response.data ) // response is the Axios response object
+    .then( data => {
+        // This is the server response
+        data.result; // The successful Call - device information
+        data.error // Unsuccessful Call - error information
+    })
+    .catch( err => console.log(err) );
+```
+
+
+
 ## Breaking Changes
 
 As of v2.0.0, there are several noteable changes that will cause previous implementations of the api wrapper to fail.
@@ -250,6 +283,3 @@ Using a credentials callback is no longer an option. All credentials must be pas
 
 JSONP is no longer supported both as a function and as an argument in the options parameter
 
-#### GetSession callback object
-
-getSession now returns a single result object that maintains consistency with the authentication call response.
