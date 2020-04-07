@@ -24,8 +24,8 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
 
         let result = await api.call('Get', {typeName: 'Device'})
             .then( result => result)
-            .catch( err => err)
-        assert.isTrue(result.data.error.name === 'InvalidUserException', 'Given credentials accepted as valid');
+            .catch( err => err);
+        assert.isTrue(result.message.includes('InvalidUserException'), 'Given credentials accepted as valid');
     });
         
     it('Api should gracefully handle a call failure (Callback)', async () => {
@@ -50,8 +50,7 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         let response = await callPromise
                         .then( resolved => resolved )
                         .catch( error => error );
-
-        assert.isTrue(response.name === 'InvalidRequest', 'Call did not return information');
+        assert.isTrue(response.name.includes('InvalidRequest'), 'Call did not return information');
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
@@ -70,6 +69,6 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         let response = await call
                             .then( result => result )
                             .catch( err => err );
-        assert.isTrue(response.data.error.name === 'InvalidRequest', 'Promise response undefined');
+        assert.isTrue(response.message.includes('InvalidRequest'), 'Promise response undefined');
     });
 });

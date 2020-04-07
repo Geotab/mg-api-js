@@ -40,7 +40,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let response = await call
                         .then( result => result )
                         .catch( err => console.log('err', err.message) );
-        assert.isTrue(response.data.result.name === 'DeviceName', 'Promise response undefined');
+        assert.isTrue(response.name === 'DeviceName', 'Promise response undefined');
     })
 
     it('Api should successfully run getSession (Callback)', async () => {
@@ -58,8 +58,8 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let auth = await sessionPromise
             .then( (response) => response )
             .catch( (err) => console.log(err) );
-        assert.isTrue(auth.data.result.credentials.userName === 'testUser@test.com', 'Credentials not properly received');
-        assert.equal(auth.data.result.path, 'www.myaddin.com', 'Server is not matching expected output')        
+        assert.isTrue(auth.credentials.userName === 'testUser@test.com', 'Credentials not properly received');
+        assert.equal(auth.path, 'www.myaddin.com', 'Server is not matching expected output')        
     });
 
     it('Api should successfully run getSession (Async)', async () =>{
@@ -70,8 +70,8 @@ describe('User loads GeotabApi node module with credentials', async () => {
         await call.then( response => {
             // Response should have a .then appended in the api to add the server
             // to the result
-            credentials = response.data.result.credentials;
-            server = response.data.result.path;
+            credentials = response.credentials;
+            server = response.path;
         })
         .catch( err => console.log(err));
 
@@ -109,15 +109,15 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let multicall = api.multiCall(calls);
         // multicall returns a promise
         let response = await multicall
-            .then( result => result.data.result )
+            .then( result => result )
             .catch( err => console.log(err));
         assert.isTrue( response.length === 2, 'Response does not match expected output');
     });
 
     it('Api should run forget', async () => {
         let api = new GeotabApi(mocks.login, {rememberMe: true});
-        let auth1 = await api.getSession().then( response => response.data.result.credentials.sessionId );
-        let auth2 = await api.forget().then( response => response.data.result.credentials.sessionId );
+        let auth1 = await api.getSession().then( response => response.credentials.sessionId );
+        let auth2 = await api.forget().then( response => response.credentials.sessionId );
         assert.notEqual(auth1, auth2, 'Session did not refresh');
     });
     
@@ -126,7 +126,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
         auth.credentials.sessionId = '123456';
         let api = new GeotabApi(auth, {rememberMe: true});
         let session = await api.getSession();
-        assert.equal(auth.credentials.sessionId, session.data.result.credentials.sessionId, 'SessionIDs are not remembered');    
+        assert.equal(auth.credentials.sessionId, session.credentials.sessionId, 'SessionIDs are not remembered');    
     });
 
     it('Should take a custom CredentialStore', async () => {
@@ -141,7 +141,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
                       sessionId: '000000'
                     },
                     path: 'CustomStore'
-                  }
+                }
             },
             set: () => {/* Custom Set - ignores default behavior to set with provided credentials */},
             clear: () => {},
@@ -150,9 +150,25 @@ describe('User loads GeotabApi node module with credentials', async () => {
 
         let api = new GeotabApi(mocks.login, {rememberMe: true, newCredentialStore: store});
         let sessionId = await api.getSession()
-            .then( result => result.data)
-            .then( data => data.result.credentials.sessionId)
+            .then( data => data.credentials.sessionId)
             .catch( err => err);
         assert.equal(sessionId, '000000', 'SessionId being updated and returned instead of following custom store logic');
     });
+
+    it('Should return axios response objects', async () => {
+        let api = new GeotabApi(mocks.login, {fullResponse: true});
+        let calls = [["GetCountOf", { typeName: "Device" }], ["GetCountOf", { typeName: "User" }]];
+
+        let authenticate = await api.authenticate();
+        let call = await api.call('Get', {typeName: 'Device'});
+        let multicall = await api.multiCall(calls);
+        let forget = await api.forget();
+        let getSession = await api.getSession();
+
+        assert.isObject( getSession.data.result.credentials, 'GetSession response not formed as Axios response object');
+        assert.isTrue( authenticate.data && authenticate.status === 200, 'Authenticate response not formed as Axios response object');
+        assert.isTrue( call.data && call.status === 200, 'Call response not formed as Axios response object');
+        assert.isTrue( multicall.data && multicall.status === 200, 'MultiCall response not formed as Axios response object');
+        assert.isTrue( forget.data && forget.status === 200, 'Forget response not formed as Axios response object');
+    })
 });
