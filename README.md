@@ -1,6 +1,6 @@
 # mg-api-js
 
-A MyGeotab API wrapper for both clientside javascript and nodeJS
+A MyGeotab API wrapper for both clientside JavaScript and nodeJS
 
 ## Installation
 
@@ -34,7 +34,7 @@ const authentication = {
     path: 'serverAddress',
 }
 ```
-**Note** - *If you do not know the exact server address, this can be omitted when using a password, and will route the initial authentication to `my.geotab.com`*.
+**Note** - *If you do not know the exact server address this can be omitted when using a password, and will route the initial authentication to `my.geotab.com`*.
 
 #### With SessionId
 
@@ -271,7 +271,7 @@ As of v2.0.0, there are several noteable changes that will cause previous implem
 
 #### GeotabApi credential callback
 
-Using a credentials callback is no longer an option. All credentials must be passed as an authentication object described above
+Using a credentials callback to instantiate `GeotabApi` is no longer an option. All credentials must be passed as an authentication object described above
 
 #### JSONP
 
