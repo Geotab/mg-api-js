@@ -1,9 +1,0 @@
-default:
-  - build
-
-build:
-  - clean
-  - standard
-  - umd
-  - concat
-  - uglify

@@ -1,8 +1,11 @@
 node_modules
 test/temp
-tmp
+test/credentials.js
+.tmp
 docs
 .DS_Store
 npm-debug.log
 coverage
 report
+.nyc_output
+dist/*.map
