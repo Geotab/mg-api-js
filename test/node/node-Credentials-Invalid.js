@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const GeotabApi = require('../../dist/api');
+const GeotabApi = require('../../dist/api.min.js');
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
