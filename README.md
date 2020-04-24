@@ -1,3 +1,5 @@
+![Node.js CI](https://github.com/Geotab/mg-api-js/workflows/Node.js%20CI/badge.svg?branch=master)
+
 # mg-api-js
 
 A MyGeotab API wrapper for both clientside JavaScript and nodeJS
