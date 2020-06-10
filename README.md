@@ -2,7 +2,7 @@
 
 # mg-api-js
 
-A MyGeotab API wrapper for both clientside JavaScript and nodeJS
+A MyGeotab API wrapper for both clientside JavaScript and NodeJS
 
 ## Installation
 
@@ -160,7 +160,6 @@ let myCall = api.call('Get', {
 
 myCall.then( data => console.log(`Server response data: ${data}`))
       .catch( error => console.log(error));
-});
 ```
 
 #### Callbacks
