@@ -2,13 +2,31 @@
 
 # mg-api-js
 
-A MyGeotab API wrapper for both clientside JavaScript and nodeJS
+A MyGeotab API wrapper for both clientside JavaScript and NodeJS
 
 ## Installation
+
+### NodeJS
 
 ```javascript
 $ npm install --save mg-api-js
 ```
+
+### Browser
+
+To access the wrapper in the browser, the library needs to be loaded in. This can be done by downloading `api.min.js` and referencing the file as needed. 
+
+Alternatively, this can be done using jsdelivr CDN:
+
+```html
+<!-- This will grab the most up to date version of the api wrapper -->
+<script src="https://cdn.jsdelivr.net/npm/mg-api-js"></script>
+
+<!-- This will grab the specified version of the api wrapper -->
+<script src="https://cdn.jsdelivr.net/npm/mg-api-js@2.0.1"></script>
+```
+
+For more options using jsdelivr, visit the [jsdelivr documentation](https://www.jsdelivr.com/features).
 
 ## Creating the Object
 **Note**: *As of v2.0.0, the GeotabApi object no longer accepts an authentication callback.*
@@ -32,8 +50,8 @@ const authentication = {
         database: 'database',
         userName: 'username',
         password: 'password'
-    }
-    path: 'serverAddress',
+    },
+    path: 'serverAddress'
 }
 ```
 **Note** - *If you do not know the exact server address this can be omitted when using a password, and will route the initial authentication to `my.geotab.com`*.
@@ -49,8 +67,8 @@ const authentication = {
         userName: 'username',
         password: 'password',
         sessionId: '123456...'
-    }
-    path: 'serverAddress',
+    },
+    path: 'serverAddress'
 }
 ```
 **Note** - *If using sessionId, you are required to provide the server path.*
@@ -110,7 +128,7 @@ Using callbacks will allow you to pass in your own logic to be executed when the
 ```javascript
 function callback(result){
     //Your response logic
-    console.log(result)
+    console.log(result);
 }
 ```
 
@@ -122,11 +140,11 @@ The api by default will authenticate when the first call is run. However, if you
 const api = new GeotabApi(authentication);
 await api.authenticate().then( response => console.log('I have authenticated'));
 // OR
-api.authenticate( (success) => {
+api.authenticate( success => {
     console.log('Successful authentication');
 }, (error) => {
     console.log('Something went wrong');
-})
+});
 ```
 
 ### Call
@@ -140,10 +158,8 @@ let myCall = api.call('Get', {
     resultsLimit: 1
 });
 
-myCall
-    .then( data => console.log(`Server response data: ${data}`))
-    .catch( error => console.log(error));
-})
+myCall.then( data => console.log(`Server response data: ${data}`))
+      .catch( error => console.log(error));
 ```
 
 #### Callbacks
@@ -174,11 +190,10 @@ let calls = [
     ['Get', { typeName: 'Device', resultsLimit: 1 }],
     ['Get', { typeName: 'User', resultsLimit: 1 }]
 ];
-let myMultiCall = api.multiCall(calls)
+let myMultiCall = api.multiCall(calls);
 
-myMultiCall
-    .then(data => console.log(`Server response: ${data}`))
-    .catch(error => console.log(error));
+myMultiCall.then(data => console.log(`Server response: ${data}`))
+           .catch(error => console.log(error));
 ```
 
 #### Callbacks
@@ -198,7 +213,7 @@ api.multiCall([
     }
 }, function (err) {
     console.error(err);
-}))
+}));
 ```
 
 ### Forget
@@ -216,9 +231,8 @@ Forget also allows a promise to be returned. By default this returns a fresh set
 ```javascript
 let myForgetCall = api.forget();
 
-myForgetCall
-    .then(data => console.log(`Server response: ${data}`))
-    .catch(error => console.log(error));
+myForgetCall.then(data => console.log(`Server response: ${data}`))
+            .catch(error => console.log(error));
 ```
 
 ### GetSession
@@ -228,9 +242,8 @@ Retrieves the API user session. Returns the credentials and server
 
 ```javascript
 let mySession = api.getSession();
-mySession
-    .then(data => console.log(`Server response: ${data}`))
-    .catch(error => console.log(error));
+mySession.then(data => console.log(`Server response: ${data}`))
+         .catch(error => console.log(error));
 ```
 
 #### Callbacks
