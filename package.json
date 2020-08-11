@@ -1,6 +1,6 @@
 {
   "name": "mg-api-js",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A MyGeotab API wrapper for clientside and serverside javascript",
   "main": "dist/api.min.js",
   "readmeFilename": "README.md",
@@ -13,7 +13,6 @@
     "mocha:web": "mocha test/web/*js --exit",
     "mocha:node": "mocha test/node/*js --exit",
     "build": "webpack --mode=production --config webpack.production.js",
-    "build:docs": "grunt groc",
     "serve": "webpack-dev-server --mode=development --config webpack.development.js",
     "test": "start-server-and-test serve http://localhost:9000 mocha",
     "test:web": "start-server-and-test serve http://localhost:9000 mocha:web",
@@ -36,7 +35,6 @@
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-loader": "^3.0.3",
-    "load-grunt-config": "^3.0.1",
     "mocha": "^7.2.0",
     "nock": "^12.0.1",
     "node-localstorage": "^2.1.5",
