@@ -1,6 +1,6 @@
 {
   "name": "mg-api-js",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A MyGeotab API wrapper for clientside and serverside javascript",
   "main": "dist/api.min.js",
   "readmeFilename": "README.md",
