@@ -12,8 +12,8 @@
     "mocha": "mocha test/**/*.js --exit",
     "mocha:web": "mocha test/web/*js --exit",
     "mocha:node": "mocha test/node/*js --exit",
-    "build": "webpack --mode=production --config webpack.production.js",
-    "serve": "webpack-dev-server --mode=development --config webpack.development.js",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=production --config webpack.production.js",
+    "serve": "NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --mode=development --config webpack.development.js",
     "test": "start-server-and-test serve http://localhost:9000 mocha",
     "test:web": "start-server-and-test serve http://localhost:9000 mocha:web",
     "test:node": "npm run build && npm run mocha:node"
@@ -50,5 +50,8 @@
   "mocha": {
     "timeout": 11000,
     "reporter": "spec"
+  },
+  "dependencies": {
+    "win-node-env": "^0.6.1"
   }
 }
