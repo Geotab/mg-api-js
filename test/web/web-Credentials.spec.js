@@ -1,14 +1,16 @@
 const assert = require('chai').assert;
 const mocks = require('../mocks/mocks.js');
 const serverSetup = require('./serverSetup');
+const GeotabApi = require('../../dist/api.min.js');
+
 /**
  * Test cases for:
  *  - API functionality with callback
  *      - Runs basic 4 functions
  *      - Runs JSONP request
  *      - Test to fail on call method
- * 
- *  All callback tests using puppeteer's evaluate command must be 
+ *
+ *  All callback tests using puppeteer's evaluate command must be
  *      wrapped in a promise -> puppeteer does not like waiting for
  *      callbacks to finish and will return null values unless explicitly
  *      made to wait with callbacks
@@ -31,7 +33,7 @@ describe('User loads web api with credentials', () => {
         }, mocks.login);
         assert.isDefined(api, 'Api not defined');
     });
-    
+
     it('Api should successfully run a call (callback)', async () => {
         let result = await page.evaluate( async (login) => {
             let api = new GeotabApi(login, {rememberMe: false});
@@ -71,7 +73,7 @@ describe('User loads web api with credentials', () => {
                 try {
                     api.getSession( (session) => {
                         resolve(session);
-                    });  
+                    });
                 } catch (err) {
                     reject(err);
                 }
@@ -90,7 +92,7 @@ describe('User loads web api with credentials', () => {
     it('Api should successfully run getSession (async)', async () => {
         let [credentials, server] = await page.evaluate( async (login) => {
             let api = new GeotabApi(login, {rememberMe: false})
-            
+
             let credentials, server;
             await api.getSession()
                 .then( response => {
@@ -100,9 +102,9 @@ describe('User loads web api with credentials', () => {
                     server = response.path;
                 })
                 .catch( err => console.log(err));
-            return [credentials, server];    
+            return [credentials, server];
         }, mocks.login);
-        
+
         assert.isObject(credentials, 'Credentials not properly received');
         assert.equal(server, 'www.myaddin.com', 'Server is not matching expected output');
     });
@@ -139,7 +141,7 @@ describe('User loads web api with credentials', () => {
                 ["GetCountOf", { typeName: "Device" }],
                 ["GetCountOf", { typeName: "User" }]
             ];
-    
+
             let response;
             let multicall = api.multiCall(calls);
             // multicall returns a promise
@@ -214,7 +216,7 @@ describe('User loads web api with credentials', () => {
                 setInterval( () => {
                     attempts ++;
                     if(typeof response !== 'undefined'){
-                        resolve(response); 
+                        resolve(response);
                     }
                     if(typeof apiError !== 'undefined'){
                         reject(apiError);
@@ -224,7 +226,7 @@ describe('User loads web api with credentials', () => {
                     }
                 }, 5);
             });
-            
+
             let result = await getPromise
                 .then( response => response)
                 .catch( err => err);
