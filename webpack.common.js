@@ -11,7 +11,9 @@ module.exports = {
         globalObject: 'typeof self !== "undefined" ? self : this'
     },
     target: 'node',
-    node: {
-        fs: 'empty'
+    resolve: {
+      fallback: {
+        fs: false
+      }
     }
 }

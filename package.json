@@ -1,6 +1,6 @@
 {
   "name": "mg-api-js",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A MyGeotab API wrapper for clientside and serverside javascript",
   "main": "dist/api.min.js",
   "readmeFilename": "README.md",
@@ -9,9 +9,9 @@
     "email": "support@geotab.com"
   },
   "scripts": {
-    "mocha": "mocha test/**/*.js --exit",
-    "mocha:web": "mocha test/web/*js --exit",
-    "mocha:node": "mocha test/node/*js --exit",
+    "mocha": "mocha test/**/*.spec.js --exit",
+    "mocha:web": "mocha test/web/*.spec.js --exit",
+    "mocha:node": "mocha test/node/*.spec.js --exit",
     "build": "webpack --mode=production --config webpack.production.js",
     "serve": "webpack-dev-server --mode=development --config webpack.development.js",
     "test": "start-server-and-test serve http://localhost:9000 mocha",
@@ -24,28 +24,29 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">= 0.10.0"
+    "node": ">= 16.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.6",
-    "@babel/preset-env": "^7.9.0",
-    "axios": "^0.21.1",
+    "@babel/core": "^7.19.1",
+    "@babel/preset-env": "^7.19.1",
+    "@webpack-cli/serve": "^1.7.0",
+    "axios": "^0.26.1",
     "babel": "^6.23.0",
-    "babel-loader": "^8.0.6",
-    "chai": "^4.2.0",
+    "babel-loader": "^8.2.5",
+    "chai": "^4.3.6",
     "eslint": "^6.8.0",
     "eslint-loader": "^3.0.3",
     "mocha": "^7.2.0",
-    "nock": "^12.0.1",
-    "node-localstorage": "^2.1.5",
+    "nock": "^12.0.3",
+    "node-localstorage": "^2.2.1",
     "puppeteer": "^2.1.1",
-    "regenerator-runtime": "^0.13.3",
-    "source-map-support": "^0.5.16",
-    "start-server-and-test": "<=1.10.7",
-    "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.11.0",
-    "webpack-merge": "^4.2.2"
+    "regenerator-runtime": "^0.13.9",
+    "source-map-support": "^0.5.21",
+    "start-server-and-test": "^1.14.0",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.11.1",
+    "webpack-merge": "^5.8.0"
   },
   "mocha": {
     "timeout": 11000,
