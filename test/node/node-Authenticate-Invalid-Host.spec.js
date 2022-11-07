@@ -11,7 +11,7 @@ require('source-map-support').install();
  *  via bad args or credentials
  */
 describe('User loads GeotabApi node module and triggers an AxiosError', async () => {
-    it('Propigates exception from Axios that URL not found', async () => {
+    it('Propagates exception from Axios that URL not found', async () => {
         let login = mocks.login;
         let api = new GeotabApi({
                 credentials: {
