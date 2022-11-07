@@ -44,8 +44,14 @@ const auth3 = nock(`https://${mocks.server}/apiv1/`)
             authenticationAttempt++;
             return {
                 error: {
-                    name: "InvalidUserException",
-                    message: "Bad info entered"
+                    code: -32000,
+                    name: "JSONRPCError",
+                    message: "Incorrect login credentials",
+                    data: {
+                      type: "InvalidUserException",
+                      id: "0b508b9e-7b94-4d38-b72f-8629119f73a3",
+                      requestIndex: 0
+                    }
                 }
             }
         })
@@ -55,7 +61,7 @@ const get = nock(`https://${mocks.server}/apiv1/`)
             .persist()
 // Device
 get
-    .post('/', (body) => { 
+    .post('/', (body) => {
         // Checking inbound body to see if it's a device
         return body.params.typeName === 'Device' && body.method === 'Get'
     })
@@ -74,8 +80,14 @@ get
     })
     .reply(200, {
         error: {
-            name: 'InvalidRequest',
-            message: 'Invalid request information entered'
+            code: -32000,
+            name: "JSONRPCError",
+            message: "The method 'Geet' could not be found. Verify the method name and ensure all method parameters are included.",
+            data: {
+              type: "MissingMethodException",
+              id: "ee15868e-6d47-41de-bafc-b20c1ca95152",
+              requestIndex: 0
+            }
         }
     })
 // GetCountOf Requests
