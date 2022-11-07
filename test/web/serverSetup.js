@@ -19,11 +19,11 @@ const opts = {
         // Configuring the request to respond to the preflight OPTIONS should also have worked, but this
         // workaround is far easier and faster
         '--disable-web-security'
-      ]
+    ]
 };
 
 let authenticationAttempts = 0;
-module.exports = async function(){
+module.exports = async function () {
     browser = await puppeteer.launch(opts);
     page = await browser.newPage();
     // Allowing puppeteer access to the request - needed for mocks
@@ -34,65 +34,79 @@ module.exports = async function(){
         if (request.url().includes(`https://${mocks.server}/apiv1`)) {
             // Post requests are normal xhr/call methods
             let payload = '';
-            if(request.method() === 'POST'){
+            if (request.method() === 'POST') {
                 let body = parseRequest(request.postData());
                 switch (body.method) {
                     case 'Authenticate':
                         // Alternate the credential response to test forget()
-                        if(authenticationAttempts%2===0){
-                            payload = { result: mocks.credentials};
+                        if (authenticationAttempts % 2 === 0) {
+                            payload = { result: mocks.credentials };
                             authenticationAttempts++;
                         } else {
-                            payload = { result: mocks.refreshedCredentials};
+                            payload = { result: mocks.refreshedCredentials };
                             authenticationAttempts++;
                         }
                         break;
                     case 'Get':
                         switch (body.params.typeName) {
                             case 'Device':
-                                payload = { result: [mocks.device]};
+                                payload = { result: [mocks.device] };
                                 break;
                             case 'User':
-                                payload = { result: [mocks.user]};
+                                payload = { result: [mocks.user] };
                                 break;
                         }
                         break;
                     case 'Geet':
                         // Poorly formed request tests
-                        payload = { result: {
-                            name: "InvalidCall",
-                            message: "Bad info entered"
-                        }}
+                        payload = {
+                            error: {
+                                code: -32000,
+                                name: "JSONRPCError",
+                                message: "The method 'Geet' could not be found. Verify the method name and ensure all method parameters are included.",
+                                data: {
+                                    type: "MissingMethodException",
+                                    id: "ee15868e-6d47-41de-bafc-b20c1ca95152",
+                                    requestIndex: 0
+                                }
+                            }
+                        }
                         break;
                     case 'ExecuteMultiCall':
                         // Looping each of the calls
-                        body.params.calls.forEach( call => {
-                            switch(call.method){
+                        body.params.calls.forEach(call => {
+                            switch (call.method) {
                                 case 'GetCountOf':
                                     // Stripped down to basics for ease of testing
-                                    payload = {result: [2000, 2001]};
-                                break;
+                                    payload = { result: [2000, 2001] };
+                                    break;
                             }
                         })
                         break;
-                    }
+                }
                 request.respond({
                     content: 'application/json',
                     headers: { 'Access-Control-Allow-Origin': '*' },
                     body: JSON.stringify(payload)
-                }); 
-            } 
-        } else if(request.url().includes('badinfo')){
+                });
+            }
+        } else if (request.url().includes('badinfo')) {
             payload = {
                 error: {
-                    name: "InvalidUserException",
-                    message: "Bad info entered"
+                    code: -32000,
+                    name: "JSONRPCError",
+                    message: "Incorrect login credentials",
+                    data: {
+                        type: "InvalidUserException",
+                        id: "0b508b9e-7b94-4d38-b72f-8629119f73a3",
+                        requestIndex: 0
+                    }
                 }
             }
 
             request.respond({
                 content: 'application/json',
-                headers: { 'Access-Control-Allow-Origin': '*'},
+                headers: { 'Access-Control-Allow-Origin': '*' },
                 body: JSON.stringify(payload)
             });
         } else {

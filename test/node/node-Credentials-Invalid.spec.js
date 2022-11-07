@@ -1,5 +1,7 @@
-const assert = require('chai').assert;
-const GeotabApi = require('../../dist/api.min.js');
+const chai = require('chai');
+chai.use(require('chai-string'));
+const assert = chai.assert;
+const GeotabApi = require('../../lib/GeotabApi.js').default;
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
@@ -8,7 +10,7 @@ require('source-map-support').install();
 /**
  *  Tests the core functionality of failing cases
  *  Tests failures against call -> Call will be the failing point of most requests
- *  via bad args or credentials 
+ *  via bad args or credentials
  */
 describe('User loads GeotabApi node module and triggers an error (Credentials)', async () => {
     it('Api should not allow a call with bad credentials', async () => {
@@ -25,9 +27,10 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         let result = await api.call('Get', {typeName: 'Device'})
             .then( result => result)
             .catch( err => err);
-        assert.isTrue(result.message.includes('InvalidUserException'), 'Given credentials accepted as valid');
+            console.log(result.message);
+        assert.startsWith(result.message, 'InvalidUserException');
     });
-        
+
     it('Api should gracefully handle a call failure (Callback)', async () => {
         let login = mocks.login;
         let api = new GeotabApi({
@@ -39,18 +42,17 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
                 path: login.path,
         }, {rememberMe: false});
 
-        let callPromise = new Promise( (resolve, reject) => {
+        let response = await new Promise((resolve, reject) => {
             api.call('Geet', {typeName: 'Device'}, function(success){
                 resolve(success);
-            }, function(error){
+            }, function(message, error){
                 reject(error);
             });
-        });
+        })
+        .then( resolved => resolved )
+        .catch( error => error );
 
-        let response = await callPromise
-                        .then( resolved => resolved )
-                        .catch( error => error );
-        assert.isTrue(response.name.includes('InvalidRequest'), 'Call did not return information');
+        assert.startsWith(response.message, 'MissingMethodException');
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
@@ -69,6 +71,6 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         let response = await call
                             .then( result => result )
                             .catch( err => err );
-        assert.isTrue(response.message.includes('InvalidRequest'), 'Promise response undefined');
+        assert.isTrue(response.message.includes('MissingMethodException'), 'Promise response undefined');
     });
 });

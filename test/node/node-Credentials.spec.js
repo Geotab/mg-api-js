@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const GeotabApi = require('../../dist/api.min.js');
+const GeotabApi = require('../../lib/GeotabApi.js').default;
 const mocks = require('../mocks/mocks');
 const LocalStorageCredentialStore = require('../../lib/LocalStorageCredentialStore').default;
 require('./nocks/nock');
@@ -8,7 +8,7 @@ require('source-map-support').install();
 /**
  *  Tests the core functionality of failing cases
  *  Tests failures against call -> Call will be the failing point of most requests
- *  via bad args or credentials 
+ *  via bad args or credentials
  */
 
 describe('User loads GeotabApi node module with credentials', async () => {
@@ -44,12 +44,12 @@ describe('User loads GeotabApi node module with credentials', async () => {
     })
 
     it('Api should successfully run getSession (Callback)', async () => {
-        let api = new GeotabApi(mocks.login, {rememberMe: false});        
+        let api = new GeotabApi(mocks.login, {rememberMe: false});
         let sessionPromise = new Promise( (resolve, reject) => {
             try {
                 api.getSession( (credentials) => {
                     resolve(credentials);
-                });  
+                });
             } catch (err) {
                 reject(err);
             }
@@ -59,7 +59,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
             .then( (response) => response )
             .catch( (err) => console.log(err) );
         assert.isTrue(auth.credentials.userName === 'testUser@test.com', 'Credentials not properly received');
-        assert.equal(auth.path, 'www.myaddin.com', 'Server is not matching expected output')        
+        assert.equal(auth.path, 'www.myaddin.com', 'Server is not matching expected output')
     });
 
     it('Api should successfully run getSession (Async)', async () =>{
@@ -76,7 +76,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
         .catch( err => console.log(err));
 
         assert.isObject(credentials, 'Credentials not properly received');
-        assert.equal(server, 'www.myaddin.com', 'Server is not matching expected output')        
+        assert.equal(server, 'www.myaddin.com', 'Server is not matching expected output')
     });
 
     it('Api should run multicall (callback)', async () => {
@@ -96,7 +96,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let result = await getPromise
             .then( response => response)
             .catch( err => console.log(err));
-        
+
         assert.isTrue(result.length > 0, 'Multicall did not return list');
     });
 
@@ -120,13 +120,13 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let auth2 = await api.forget().then( response => response.credentials.sessionId );
         assert.notEqual(auth1, auth2, 'Session did not refresh');
     });
-    
+
     it('Api rememberMe should function properly', async () => {
         let auth = mocks.login;
         auth.credentials.sessionId = '123456';
         let api = new GeotabApi(auth, {rememberMe: true});
         let session = await api.getSession();
-        assert.equal(auth.credentials.sessionId, session.credentials.sessionId, 'SessionIDs are not remembered');    
+        assert.equal(auth.credentials.sessionId, session.credentials.sessionId, 'SessionIDs are not remembered');
     });
 
     it('Should take a custom CredentialStore', async () => {

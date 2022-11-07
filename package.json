@@ -1,6 +1,6 @@
 {
   "name": "mg-api-js",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "A MyGeotab API wrapper for clientside and serverside javascript",
   "main": "dist/api.min.js",
   "readmeFilename": "README.md",
@@ -34,6 +34,7 @@
     "babel": "^6.23.0",
     "babel-loader": "^8.2.5",
     "chai": "^4.3.6",
+    "chai-string": "^1.5.0",
     "eslint": "^6.8.0",
     "eslint-loader": "^3.0.3",
     "mocha": "^7.2.0",
