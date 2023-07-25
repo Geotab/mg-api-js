@@ -54,7 +54,7 @@ const authentication = {
     path: 'serverAddress'
 }
 ```
-**Note** - *If you do not know the exact server address this can be omitted when using a password, and will route the initial authentication to `my.geotab.com`*.
+> If you do not know the exact server address this can be omitted when using a password, and will route the initial authentication to `my.geotab.com`.
 
 #### With SessionId
 
@@ -71,7 +71,9 @@ const authentication = {
     path: 'serverAddress'
 }
 ```
-**Note** - *If using sessionId, you are required to provide the server path.*
+> If using sessionId, you are required to provide the server path.
+
+> A session is valid for up to 14 days.
 
 ### Options *(optional)*
 
@@ -236,7 +238,7 @@ myForgetCall.then(data => console.log(`Server response: ${data}`))
 ```
 
 ### GetSession
-Retrieves the API user session. Returns the credentials and server
+Retrieves the API user session. Returns the credentials and server.
 
 #### Promises
 
