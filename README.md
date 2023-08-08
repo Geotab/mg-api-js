@@ -125,14 +125,27 @@ api.call('Get', { typeName: 'Device', resultsLimit: 100 })
     });
 ```
 
-Using callbacks will allow you to pass in your own logic to be executed when the call is complete. The standard pattern for callback responses is as follows:
+Using callbacks will allow you to pass in your own logic to be executed when the call is complete. The standard pattern for success callback is as follows:
 
 ```javascript
-function callback(result){
+function callbackSuccess(result){
     //Your response logic
     console.log(result);
 }
 ```
+
+Error callbacks have two parameters: `message` and `error`. `message` is a condensed `string` form of `error` for convience. In the case of a non-200 status code failure, `error` is an instance of `Error`. In all other cases, it is the full error JSON returned from the API call. 
+
+```javascript
+function callbackError(message, error){
+    //Your response logic
+    console.log(message);
+    console.log(error.data);
+}
+```
+For more information on the error JSON structure returned from MyGeotab API, see [here](https://geotab.github.io/sdk/software/guides/concepts/#results-and-errors).
+
+Note: `error` parameter in a `.catch` statement always returns an instance of `Error`. 
 
 ### Authentication
 
@@ -144,7 +157,7 @@ await api.authenticate().then( response => console.log('I have authenticated'));
 // OR
 api.authenticate( success => {
     console.log('Successful authentication');
-}, (error) => {
+}, (message, error) => {
     console.log('Something went wrong');
 });
 ```
@@ -176,7 +189,7 @@ api.call('Get', {
     if (result) {
         console.log(result);
     }
-}, function (err) {
+}, function (message, err) {
     console.error(err);
 });
 ```
@@ -213,9 +226,9 @@ api.multiCall([
     if (result) {
         console.log(result);
     }
-}, function (err) {
+}, function (message, err) {
     console.error(err);
-}));
+});
 ```
 
 ### Forget

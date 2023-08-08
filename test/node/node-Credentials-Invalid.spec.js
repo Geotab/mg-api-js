@@ -52,7 +52,7 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         .then( resolved => resolved )
         .catch( error => error );
 
-        assert.startsWith(response.message, 'MissingMethodException');
+        assert.equal(response.data.type, 'MissingMethodException');
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
