@@ -18,7 +18,12 @@ const opts = {
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Examples_of_access_control_scenarios
         // Configuring the request to respond to the preflight OPTIONS should also have worked, but this
         // workaround is far easier and faster
-        '--disable-web-security'
+        '--disable-web-security',
+        // Using sandbox triggers this error when calling browser.newPage(): 
+        // [0809/104946.906735:FATAL:gpu_data_manager_impl_private.cc(1034)] The display compositor is frequently crashing. Goodbye.
+        // This causes the call to hang and block the tests from running.
+        // Disabling sandbox in a testing context shouldn't cause any security concerns
+        '--no-sandbox'
     ]
 };
 
