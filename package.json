@@ -26,11 +26,13 @@
   "engines": {
     "node": ">= 16.0.0"
   },
+  "dependencies": {
+    "axios": "^0.26.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.19.1",
     "@babel/preset-env": "^7.19.1",
     "@webpack-cli/serve": "^1.7.0",
-    "axios": "^0.26.1",
     "babel": "^6.23.0",
     "babel-loader": "^8.2.5",
     "chai": "^4.3.6",
