@@ -52,7 +52,7 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
         .then( resolved => resolved )
         .catch( error => error );
 
-        assert.startsWith(response.message, 'MissingMethodException');
+        assert.equal(response.data.type, 'MissingMethodException');
     });
 
     it('Api should gracefully handle a call failure (Async)', async () => {
@@ -68,6 +68,56 @@ describe('User loads GeotabApi node module and triggers an error (Credentials)',
 
         // api.call returns a promise
         let call = api.call('Geet', {typeName: 'Device'});
+        let response = await call
+                            .then( result => result )
+                            .catch( err => err );
+        assert.isTrue(response.message.includes('MissingMethodException'), 'Promise response undefined');
+    });
+
+    it('Api should gracefully handle a multicall failure (Callback)', async () => {
+        let login = mocks.login;
+        let api = new GeotabApi({
+                credentials: {
+                    database: login.credentials.database,
+                    userName: login.credentials.username,
+                    password: login.credentials.password
+                },
+                path: login.path,
+        }, {rememberMe: false});
+
+        let response = await new Promise((resolve, reject) => {
+            let calls = [
+                ["GetCountOff", { typeName: "Device" }],
+                ["GetCountOf", { typeName: "User" }]
+            ];
+            api.multiCall(calls, function(success){
+                resolve(success);
+            }, function(message, error){
+                reject(error);
+            });
+        })
+        .then( resolved => resolved )
+        .catch( error => error );
+
+        assert.equal(response.data.type, 'MissingMethodException');
+    });
+
+    it('Api should gracefully handle a multicall failure (Async)', async () => {
+        let login = mocks.login;
+        let api = new GeotabApi({
+            credentials: {
+                database: login.credentials.database,
+                userName: login.credentials.username,
+                password: login.credentials.password
+            },
+            path: login.path,
+        }, {rememberMe: false});
+
+        let calls = [
+            ["GetCountOff", { typeName: "Device" }],
+            ["GetCountOf", { typeName: "User" }]
+        ];
+        let call = api.multiCall(calls);
         let response = await call
                             .then( result => result )
                             .catch( err => err );
