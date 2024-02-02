@@ -1,6 +1,6 @@
 {
   "name": "mg-api-js",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A MyGeotab API wrapper for clientside and serverside javascript",
   "main": "dist/api.min.js",
   "readmeFilename": "README.md",
@@ -25,6 +25,9 @@
   "license": "MIT",
   "engines": {
     "node": ">= 16.0.0"
+  },
+  "overrides": {
+    "follow-redirects": "1.15.4"
   },
   "dependencies": {
     "axios": "^0.26.1"
