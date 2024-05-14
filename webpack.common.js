@@ -12,7 +12,6 @@ module.exports = {
         },
         globalObject: 'this'
     },
-    target: 'node',
     resolve: {
       fallback: {
         path: false,
