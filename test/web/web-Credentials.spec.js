@@ -1,7 +1,6 @@
 const assert = require('chai').assert;
 const mocks = require('../mocks/mocks.js');
 const serverSetup = require('./serverSetup');
-const GeotabApi = require('../../lib/GeotabApi.js').default;
 
 /**
  * Test cases for:
