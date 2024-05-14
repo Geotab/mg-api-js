@@ -30,7 +30,7 @@
     "follow-redirects": "1.15.4"
   },
   "dependencies": {
-    "axios": "^0.26.1"
+    "axios": "^0.28.1"
   },
   "devDependencies": {
     "@babel/core": "^7.19.1",
