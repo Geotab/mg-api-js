@@ -1,18 +1,21 @@
 const path = require('path');
 
 module.exports = {
-    entry: './lib/api.js',
+    entry: './lib/index.js',
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'api.min.js',
-        library: 'GeotabApi',
-        libraryTarget: 'umd',
-        globalObject: 'typeof self !== "undefined" ? self : this'
+        library: {
+          name: 'GeotabApi',
+          type: 'umd',
+        },
+        globalObject: 'this'
     },
     target: 'node',
     resolve: {
       fallback: {
+        path: false,
         fs: false
       }
     }
