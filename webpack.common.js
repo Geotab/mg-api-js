@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     entry: './lib/index.js',
@@ -17,5 +18,12 @@ module.exports = {
         path: false,
         fs: false
       }
-    }
+    },
+    plugins: [
+        new CopyPlugin({
+            patterns: [
+                { from: "lib/api.d.ts", to: "api.min.d.ts" },
+            ],
+        }),
+    ]
 }
