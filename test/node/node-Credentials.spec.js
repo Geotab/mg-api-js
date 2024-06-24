@@ -1,6 +1,7 @@
 const assert = require('chai').assert;
-const GeotabApi = require('../../lib/index.js');
+const GeotabApi = require('../../lib/GeotabApi.js').default;
 const mocks = require('../mocks/mocks');
+const LocalStorageCredentialStore = require('../../lib/LocalStorageCredentialStore').default;
 require('./nocks/nock');
 require('source-map-support').install();
 
