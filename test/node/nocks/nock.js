@@ -108,7 +108,34 @@ getCount
 
 const multiCall = nock(`https://${mocks.server}/apiv1/`)
                 .persist()
-                .post('/', (body) => {
-                    return body.method === 'ExecuteMultiCall'
-                })
-                .reply(200, {result: [2000, 2001]})
+
+multiCall
+    .post('/', (body) => {
+        let methodNamesCorrect = body.params.calls.every((call) => call.method === 'GetCountOf');
+        return body.method === 'ExecuteMultiCall' && methodNamesCorrect
+    })
+    .reply(200, {result: [2000, 2001]})
+
+multiCall
+    .post('/', (body) => {
+        let methodNamesIncorrect = body.params.calls.some((call) => call.method === 'GetCountOff');
+        return body.method === 'ExecuteMultiCall' && methodNamesIncorrect;
+    })
+    .reply(200, {
+        error: {
+            message: "The method 'GetCountOff' could not be found. Verify the method name and ensure all method parameters are included.",
+            code: -32601,
+            data: {
+                id: "ee15868e-6d47-41de-bafc-b20c1ca95152",
+                type: "MissingMethodException",
+                requestIndex: 1
+            },
+            name: "JSONRPCError",
+            errors: [
+                {
+                    message: "The method 'Ge' could not be found. Verify the method name and ensure all method parameters are included.",
+                    name: "MissingMethodException"
+                }
+            ]
+        },
+    })
