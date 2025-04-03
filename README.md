@@ -82,7 +82,7 @@ This optional parameter allows you to define some default behavior of the api:
 | Argument | Type | Description | Default |
 | --- | --- | --- | --- |
 | rememberMe | *boolean* | Determines whether or not to store the credentials/session in the datastore | `true` |
-| timeout | *number* | The length of time the wrapper will wait for a response from the server (in seconds) | `3` |
+| timeout | *number* | The length of time the wrapper will wait for a response from the server (in seconds) | `180` |
 | newCredentialStore | *object* | Overrides the default datastore for remembered credentials/sessions | `false` |
 | fullResponse | *boolean* | Removes error handling and provides full [Axios Response Object](https://github.com/axios/axios#response-schema). More information in the **Axios Response section** | `false` |
 
