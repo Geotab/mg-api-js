@@ -143,7 +143,7 @@ function callbackError(message, error){
     console.log(error.data);
 }
 ```
-For more information on the error JSON structure returned from MyGeotab API, see [here](https://geotab.github.io/sdk/software/guides/concepts/#results-and-errors).
+For more information on the error JSON structure returned from MyGeotab API, see [here](https://developers.geotab.com/myGeotab/guides/concepts#result-and-errors).
 
 Note: `error` parameter in a `.catch` statement always returns an instance of `Error`. 
 
