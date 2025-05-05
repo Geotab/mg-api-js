@@ -165,9 +165,9 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let getSession = await api.getSession();
 
         assert.isObject( getSession.data.result.credentials, 'GetSession response not formed as Axios response object');
-        assert.isTrue( authenticate.data && authenticate.status === 200, 'Authenticate response not formed as Axios response object');
-        assert.isTrue( call.data && call.status === 200, 'Call response not formed as Axios response object');
-        assert.isTrue( multicall.data && multicall.status === 200, 'MultiCall response not formed as Axios response object');
-        assert.isTrue( forget.data && forget.status === 200, 'Forget response not formed as Axios response object');
+        assert.isTrue( authenticate.data && authenticate.statusCode === 200, 'Authenticate response not formed as Axios response object');
+        assert.isTrue( call.data && call.statusCode === 200, 'Call response not formed as Axios response object');
+        assert.isTrue( multicall.data && multicall.statusCode === 200, 'MultiCall response not formed as Axios response object');
+        assert.isTrue( forget.data && forget.statusCode === 200, 'Forget response not formed as Axios response object');
     })
 });
