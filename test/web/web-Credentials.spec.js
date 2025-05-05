@@ -234,7 +234,7 @@ describe('User loads web api with credentials', () => {
         assert.isTrue(result.includes('MissingMethodException'), 'API does not fail on malformed calls');
     });
     //#endregion
-    it('Should return axios response objects', async () => {
+    it('Should return fetch response objects', async () => {
         let results = await page.evaluate(async (login) => {
             let api = new GeotabApi(login, { fullResponse: true });
             let calls = [["GetCountOf", { typeName: "Device" }], ["GetCountOf", { typeName: "User" }]];
@@ -249,7 +249,7 @@ describe('User loads web api with credentials', () => {
 
         results = results.map(result => JSON.parse(result));
         results.forEach(result => {
-            assert.isTrue(typeof result.data.result === 'object', 'Result not defined');
+            assert.isTrue(result.data && typeof result.data.result === 'object', 'Result not defined');
         });
     });
 

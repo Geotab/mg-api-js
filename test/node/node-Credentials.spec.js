@@ -154,7 +154,7 @@ describe('User loads GeotabApi node module with credentials', async () => {
         assert.equal(sessionId, '000000', 'SessionId being updated and returned instead of following custom store logic');
     });
 
-    it('Should return axios response objects', async () => {
+    it('Should return node http response objects', async () => {
         let api = new GeotabApi(mocks.login, {fullResponse: true});
         let calls = [["GetCountOf", { typeName: "Device" }], ["GetCountOf", { typeName: "User" }]];
 
@@ -164,10 +164,10 @@ describe('User loads GeotabApi node module with credentials', async () => {
         let forget = await api.forget();
         let getSession = await api.getSession();
 
-        assert.isObject( getSession.data.result.credentials, 'GetSession response not formed as Axios response object');
-        assert.isTrue( authenticate.data && authenticate.statusCode === 200, 'Authenticate response not formed as Axios response object');
-        assert.isTrue( call.data && call.statusCode === 200, 'Call response not formed as Axios response object');
-        assert.isTrue( multicall.data && multicall.statusCode === 200, 'MultiCall response not formed as Axios response object');
-        assert.isTrue( forget.data && forget.statusCode === 200, 'Forget response not formed as Axios response object');
+        assert.isObject( getSession.data.result.credentials, 'GetSession response not formed as an http.ServerResponse response object');
+        assert.isTrue( authenticate.data && authenticate.statusCode === 200, 'Authenticate response not formed as http.ServerResponse response object');
+        assert.isTrue( call.data && call.statusCode === 200, 'Call response not formed as http.ServerResponse response object');
+        assert.isTrue( multicall.data && multicall.statusCode === 200, 'MultiCall response not formed as http.ServerResponse response object');
+        assert.isTrue( forget.data && forget.statusCode === 200, 'Forget response not formed as http.ServerResponse response object');
     })
 });
