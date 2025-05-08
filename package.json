@@ -14,9 +14,9 @@
     "mocha:node": "mocha test/node/*.spec.js --exit",
     "build": "webpack --mode=production --config webpack.production.js",
     "serve": "webpack-dev-server --mode=development --config webpack.development.js",
-    "test": "start-server-and-test serve http://localhost:9000 mocha",
+    "test": "npm run build && start-server-and-test serve http://localhost:9000 mocha",
     "test:web": "start-server-and-test serve http://localhost:9000 mocha:web",
-    "test:node": "npm run build && npm run mocha:node"
+    "test:node": "npm run mocha:node"
   },
   "repository": {
     "url": "https://github.com/Geotab/mg-api-js",

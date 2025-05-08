@@ -1,7 +1,7 @@
 const chai = require('chai');
 chai.use(require('chai-string'));
 const assert = chai.assert;
-const GeotabApi = require('../../lib/GeotabApi.js').default;
+const GeotabApi = require('../../dist/api.min.js');
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
