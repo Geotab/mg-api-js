@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const GeotabApi = require('../../lib/GeotabApi.js').default;
+const GeotabApi = require('../../dist/api.min.js');
 const mocks = require('../mocks/mocks');
 const login = mocks.login;
 require('./nocks/nock');
@@ -10,8 +10,8 @@ require('source-map-support').install();
  *  Tests failures against call -> Call will be the failing point of most requests
  *  via bad args or credentials
  */
-describe('User loads GeotabApi node module and triggers an AxiosError', async () => {
-    it('Propagates exception from Axios that URL not found', async () => {
+describe('User loads GeotabApi from bundle and triggers an error', async () => {
+    it('Propagates exception from call that URL not found', async () => {
         let login = mocks.login;
         let api = new GeotabApi({
                 credentials: {

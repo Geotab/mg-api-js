@@ -84,7 +84,7 @@ This optional parameter allows you to define some default behavior of the api:
 | rememberMe | *boolean* | Determines whether or not to store the credentials/session in the datastore | `true` |
 | timeout | *number* | The length of time the wrapper will wait for a response from the server (in seconds) | `3` |
 | newCredentialStore | *object* | Overrides the default datastore for remembered credentials/sessions | `false` |
-| fullResponse | *boolean* | Removes error handling and provides full [Axios Response Object](https://github.com/axios/axios#response-schema). More information in the **Axios Response section** | `false` |
+| fullResponse | *boolean* | Removes error handling and provides the full [Http Server Response](https://nodejs.org/api/http.html#class-httpserverresponse) when in a node environment or the full [Fetch Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) when in a browser environment. More information in the **Full Response** section | `false` |
 
 Example options object: 
 
@@ -111,7 +111,7 @@ At minimum, the datastore must have the following methods:
 
 ## Methods
 
-By default, all methods and callbacks will return the results of the call directly. Errors are also handled by the wrapper. If you need more control over the call results, see the **Axios Response** section below.
+By default, all methods and callbacks will return the results of the call directly. Errors are also handled by the wrapper. If you need more control over the call results, see the **Full Response** section below.
 
 ```javascript
 api.call('Get', { typeName: 'Device', resultsLimit: 100 })
@@ -143,7 +143,7 @@ function callbackError(message, error){
     console.log(error.data);
 }
 ```
-For more information on the error JSON structure returned from MyGeotab API, see [here](https://geotab.github.io/sdk/software/guides/concepts/#results-and-errors).
+For more information on the error JSON structure returned from MyGeotab API, see [here](https://developers.geotab.com/myGeotab/guides/concepts#result-and-errors).
 
 Note: `error` parameter in a `.catch` statement always returns an instance of `Error`. 
 
@@ -269,9 +269,9 @@ api.getSession(function (result) {
 });
 ```
 
-## Axios Responses
+## Full Responses
 **Note:** *This will disable all error checking in the GeotabApi wrapper*
-In an effort to give you more control over the actual responses, the wrapper can be configured to return an [Axios Response Object](https://github.com/axios/axios#response-schema). This object contains several bits of information about the request and it's response. Response data will be held in the `data` section of the response.
+In an effort to give you more control over the actual responses, the wrapper can be configured to return the full [Http Server Response](https://nodejs.org/api/http.html#class-httpserverresponse) when in a node environment and the full [Fetch Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) when in a browser environment. This object contains several bits of information about the request and it's response. Response data will be held in the `data` section of the response.
 
 To enable full response data, simply add the `fullResponse: true` to the options object when constructing the `GeotabApi` object:
 ```javascript
@@ -286,7 +286,7 @@ If the call to the database is successful, but there is an error with the call i
 
 ```javascript
 api.call('Get', {typeName: 'Device', resultsLimit: 10})
-    .then( response => response.data ) // response is the Axios response object
+    .then( response => response.data ) // response is the full http/fetch response object
     .then( data => {
         // This is the server response
         data.result; // The successful Call - device information
@@ -298,6 +298,8 @@ api.call('Get', {typeName: 'Device', resultsLimit: 10})
 ## Breaking Changes
 
 As of v2.0.0, there are several noteable changes that will cause previous implementations of the api wrapper to fail.
+
+As of v3.0.0, Axios is no longer being used to make requests and the `fullResponse` option no longer returns an [Axios Response Object](https://github.com/axios/axios#response-schema), refer to the **Full Response** section for more detail.
 
 #### GeotabApi credential callback
 
