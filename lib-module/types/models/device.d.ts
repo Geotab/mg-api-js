@@ -108,3 +108,4 @@ export interface Device extends Entity {
 
 interface CustomFeatures {
 }
+
