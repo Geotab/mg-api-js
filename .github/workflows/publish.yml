@@ -36,10 +36,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 22.x
-
-    - name: Upgrade npm for Trusted Publishing
-      run: npm install -g npm@latest
+        node-version: 24.x
 
     - name: Install dependencies
       run: npm ci
@@ -60,4 +57,4 @@ jobs:
         fi
 
     - name: Publish to npm
-      run: npm publish --access public
+      run: npm publish --provenance --access public
