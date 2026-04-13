@@ -1,12 +1,14 @@
 # Publishes the package to npm when a GitHub Release is created.
+# Uses npm Trusted Publishing (OIDC) — no static token needed.
 #
-# Setup:
-# 1. Generate an npm access token at https://www.npmjs.com/settings/<user>/tokens
-#    - Choose "Automation" token type (bypasses 2FA for CI)
-# 2. Add it as a repository secret in GitHub:
-#    Settings → Secrets and variables → Actions → New repository secret
-#    Name: NPM_TOKEN
-#    Value: <your token>
+# Setup (one-time on npmjs.com):
+# 1. Go to https://www.npmjs.com/package/mg-api-js/access
+# 2. Under "Publishing access" → Configure Trusted Publishing
+# 3. Add a new trusted publisher:
+#    - Repository owner: Geotab
+#    - Repository name: mg-api-js
+#    - Workflow filename: publish.yml
+#    - Environment: (leave blank)
 #
 # Usage:
 # 1. Bump the version:  npm version patch|minor|major
@@ -23,6 +25,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
     - uses: actions/checkout@v4
@@ -51,7 +57,7 @@ jobs:
           exit 1
         fi
 
-    - name: Publish to npm
-      run: npm publish
+    - name: Publish to npm with provenance
+      run: npm publish --provenance --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
