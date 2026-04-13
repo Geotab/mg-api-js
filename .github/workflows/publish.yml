@@ -1,0 +1,57 @@
+# Publishes the package to npm when a GitHub Release is created.
+#
+# Setup:
+# 1. Generate an npm access token at https://www.npmjs.com/settings/<user>/tokens
+#    - Choose "Automation" token type (bypasses 2FA for CI)
+# 2. Add it as a repository secret in GitHub:
+#    Settings → Secrets and variables → Actions → New repository secret
+#    Name: NPM_TOKEN
+#    Value: <your token>
+#
+# Usage:
+# 1. Bump the version:  npm version patch|minor|major
+# 2. Push with tags:    git push && git push --tags
+# 3. Create a GitHub Release from the new tag and add release notes
+# 4. The workflow runs automatically: build → test → publish
+
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        registry-url: https://registry.npmjs.org
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build
+      run: npm run build
+
+    - name: Run tests
+      run: npm run test:node
+
+    - name: Verify version matches tag
+      run: |
+        PACKAGE_VERSION="v$(node -p "require('./package.json').version")"
+        TAG_NAME="${{ github.event.release.tag_name }}"
+        if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
+          echo "Error: package.json version ($PACKAGE_VERSION) does not match release tag ($TAG_NAME)"
+          exit 1
+        fi
+
+    - name: Publish to npm
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
