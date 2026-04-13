@@ -1,14 +1,15 @@
 # Publishes the package to npm when a GitHub Release is created.
-# Uses npm Trusted Publishing (OIDC) — no static token needed.
+# Uses a Granular Access Token for auth + OIDC for provenance attestation.
 #
-# Setup (one-time on npmjs.com):
-# 1. Go to https://www.npmjs.com/package/mg-api-js/access
-# 2. Under "Publishing access" → Configure Trusted Publishing
-# 3. Add a new trusted publisher:
-#    - Repository owner: Geotab
-#    - Repository name: mg-api-js
-#    - Workflow filename: publish.yml
-#    - Environment: (leave blank)
+# Setup:
+# 1. Create a Granular Access Token on npmjs.com:
+#    Settings → Access Tokens → Generate New Token → Granular Access Token
+#    Scope it to read+write on the mg-api-js package only
+# 2. Add it as a GitHub repository secret named NPM_TOKEN:
+#    Settings → Secrets and variables → Actions → New repository secret
+# 3. (Optional) Configure Trusted Publishing on npmjs.com for provenance:
+#    https://www.npmjs.com/package/mg-api-js/access → Trusted Publishing
+#    Repository owner: Geotab, Repository: mg-api-js, Workflow: publish.yml
 #
 # Usage:
 # 1. Bump the version:  npm version patch|minor|major
@@ -59,3 +60,5 @@ jobs:
 
     - name: Publish to npm with provenance
       run: npm publish --provenance --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
