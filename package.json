@@ -19,7 +19,7 @@
     "test:node": "npm run mocha:node"
   },
   "repository": {
-    "url": "https://github.com/Geotab/mg-api-js",
+    "url": "git+https://github.com/Geotab/mg-api-js.git",
     "type": "git"
   },
   "license": "MIT",
