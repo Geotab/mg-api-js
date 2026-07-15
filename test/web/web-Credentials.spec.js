@@ -25,6 +25,10 @@ describe('User loads web api with credentials', () => {
         [browser, page] = await serverSetup();
     });
 
+    beforeEach(async () => {
+        await page.evaluate(() => localStorage.clear());
+    });
+
     it('Api Should initialize', async () => {
         api = await page.evaluate(async (login) => {
             let api = new GeotabApi(login, { rememberMe: false });
@@ -162,19 +166,101 @@ describe('User loads web api with credentials', () => {
         assert.isFalse(result[0] === result[1], 'Session ID\'s are the same');
     });
 
-    it('Api rememberMe should function properly', async () => {
+    it('Api rememberMe should persist a session in localStorage', async () => {
         let result = await page.evaluate(async (login) => {
             let api1 = new GeotabApi(login, { rememberMe: true });
+            let session1 = await api1.getSession();
             let api2 = new GeotabApi(login, { rememberMe: true });
-            let sess1 = await api1.getSession()
-                .then(response => response.sessionId)
-                .catch(err => console.log(err));
-            let sess2 = await api2.getSession()
-                .then(response => response.sessionId)
-                .catch(err => console.log(err));
-            return [sess1, sess2];
+            let session2 = await api2.getSession();
+            let storedCredentials = JSON.parse(localStorage.getItem('geotabAPI_credentials'));
+
+            return {
+                firstSessionId: session1.credentials.sessionId,
+                secondSessionId: session2.credentials.sessionId,
+                storedSessionId: storedCredentials.sessionId,
+                storedServer: localStorage.getItem('geotabAPI_server')
+            };
         }, mocks.login);
-        assert.isTrue(result[0] === result[1], 'Session IDs do not match');
+
+        assert.isString(result.firstSessionId, 'First session ID is missing');
+        assert.equal(result.secondSessionId, result.firstSessionId, 'Stored session ID was not reused');
+        assert.equal(result.storedSessionId, result.firstSessionId, 'Session ID was not persisted');
+        assert.equal(result.storedServer, mocks.server, 'Server was not persisted');
+    });
+
+    it('rememberMe false should not write credentials to localStorage', async () => {
+        let result = await page.evaluate(async (login) => {
+            let api = new GeotabApi(login, { rememberMe: false });
+            let session = await api.getSession();
+
+            return {
+                sessionId: session.credentials.sessionId,
+                storedCredentials: localStorage.getItem('geotabAPI_credentials'),
+                storedServer: localStorage.getItem('geotabAPI_server')
+            };
+        }, mocks.login);
+
+        assert.isString(result.sessionId, 'Authentication did not return a session ID');
+        assert.isNull(result.storedCredentials, 'Credentials were persisted with rememberMe disabled');
+        assert.isNull(result.storedServer, 'Server was persisted with rememberMe disabled');
+    });
+
+    it('Should support a synchronous custom credential store', async () => {
+        let result = await page.evaluate(async (login) => {
+            let value = false;
+            let calls = { get: 0, set: 0, clear: 0, invalidSet: 0 };
+            let store = {
+                get() {
+                    calls.get++;
+                    return value;
+                },
+                set(credentials, server) {
+                    calls.set++;
+                    if (!credentials) {
+                        calls.invalidSet++;
+                    }
+                    value = { credentials, server };
+                },
+                clear() {
+                    calls.clear++;
+                    value = false;
+                }
+            };
+
+            let firstLogin = {
+                credentials: {
+                    database: login.credentials.database,
+                    userName: login.credentials.userName,
+                    password: login.credentials.password
+                },
+                path: login.path
+            };
+            let api1 = new GeotabApi(firstLogin, { rememberMe: true, newCredentialStore: store });
+            let session1 = await api1.getSession();
+            let secondLogin = {
+                credentials: { ...firstLogin.credentials },
+                path: 'unused.example'
+            };
+            let api2 = new GeotabApi(secondLogin, { rememberMe: true, newCredentialStore: store });
+            let session2 = await api2.getSession();
+            await api2.forget();
+
+            return {
+                calls,
+                firstSessionId: session1.credentials.sessionId,
+                secondSessionId: session2.credentials.sessionId,
+                restoredPath: session2.path,
+                server: value.server
+            };
+        }, mocks.login);
+
+        assert.isAtLeast(result.calls.get, 2, 'Custom store was not read');
+        assert.isAtLeast(result.calls.set, 1, 'Custom store was not written');
+        assert.equal(result.calls.invalidSet, 0, 'Custom store received an empty credential object');
+        assert.equal(result.calls.clear, 1, 'Custom store was not cleared by forget');
+        assert.equal(result.secondSessionId, result.firstSessionId, 'Custom store session was not reused');
+        assert.equal(result.restoredPath, mocks.server, 'Custom store server was not restored');
+        assert.equal(result.server, mocks.server, 'Refreshed session was not written with the restored server');
     });
     //#region Test to fail
     it('Should return errors with incorrect credentials', async () => {
@@ -254,6 +340,8 @@ describe('User loads web api with credentials', () => {
     });
 
     after(async () => {
-        browser.close();
+        if (browser) {
+            await browser.close();
+        }
     });
 });

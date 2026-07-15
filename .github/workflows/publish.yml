@@ -44,8 +44,18 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Run tests
+    - name: Run Node.js tests
       run: npm run test:node
+
+    - name: Setup Chrome
+      id: setup-chrome
+      uses: browser-actions/setup-chrome@v2
+
+    - name: Run browser tests
+      run: npm run test:web
+      env:
+        CI: true
+        PUPPETEER_EXECUTABLE_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
 
     - name: Verify version matches tag
       run: |
