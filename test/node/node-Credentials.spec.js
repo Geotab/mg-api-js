@@ -121,37 +121,51 @@ describe('User loads GeotabApi node module with credentials', async () => {
     });
 
     it('Api rememberMe should function properly', async () => {
-        let auth = mocks.login;
+        let auth = JSON.parse(JSON.stringify(mocks.login));
         auth.credentials.sessionId = '123456';
         let api = new GeotabApi(auth, {rememberMe: true});
         let session = await api.getSession();
         assert.equal(auth.credentials.sessionId, session.credentials.sessionId, 'SessionIDs are not remembered');
     });
 
-    it('Should take a custom CredentialStore', async () => {
-        // Custom store with custom behaviour
+    it('Should support a synchronous custom CredentialStore', async () => {
+        let value = false;
+        let calls = {get: 0, set: 0, clear: 0, invalidSet: 0};
         let store = {
             get: () => {
-                return {
-                    credentials: {
-                      userName: 'Custom',
-                      password: 'Store',
-                      database: 'testDB',
-                      sessionId: '000000'
-                    },
-                    path: 'CustomStore'
-                }
+                calls.get++;
+                return value;
             },
-            set: () => {/* Custom Set - ignores default behavior to set with provided credentials */},
-            clear: () => {},
-            custom: () => {}
+            set: (credentials, server) => {
+                calls.set++;
+                if (!credentials) {
+                    calls.invalidSet++;
+                }
+                value = {credentials, server};
+            },
+            clear: () => {
+                calls.clear++;
+                value = false;
+            }
         };
 
-        let api = new GeotabApi(mocks.login, {rememberMe: true, newCredentialStore: store});
-        let sessionId = await api.getSession()
-            .then( data => data.credentials.sessionId)
-            .catch( err => err);
-        assert.equal(sessionId, '000000', 'SessionId being updated and returned instead of following custom store logic');
+        let firstLogin = JSON.parse(JSON.stringify(mocks.login));
+        delete firstLogin.credentials.sessionId;
+        let api1 = new GeotabApi(firstLogin, {rememberMe: true, newCredentialStore: store});
+        let session1 = await api1.getSession();
+        let secondLogin = JSON.parse(JSON.stringify(firstLogin));
+        secondLogin.path = 'unused.example';
+        let api2 = new GeotabApi(secondLogin, {rememberMe: true, newCredentialStore: store});
+        let session2 = await api2.getSession();
+        await api2.forget();
+
+        assert.isAtLeast(calls.get, 2, 'Custom store was not read');
+        assert.isAtLeast(calls.set, 1, 'Custom store was not written');
+        assert.equal(calls.invalidSet, 0, 'Custom store received an empty credential object');
+        assert.equal(calls.clear, 1, 'Custom store was not cleared by forget');
+        assert.equal(session2.credentials.sessionId, session1.credentials.sessionId, 'Custom store session was not reused');
+        assert.equal(session2.path, mocks.server, 'Custom store server was not restored');
+        assert.equal(value.server, mocks.server, 'Refreshed session was not written with the restored server');
     });
 
     it('Should return node http response objects', async () => {

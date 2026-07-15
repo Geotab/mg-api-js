@@ -1,124 +1,143 @@
-const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+const puppeteer = require('puppeteer-core');
 const mocks = require('../mocks/mocks.js');
 
-// JSON-RPC helpers
-const parseRequest = body => {
-    return JSON.parse(body);
-};
+const chromeCandidates = [
+    process.env.PUPPETEER_EXECUTABLE_PATH,
+    process.env.CHROME_PATH,
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    process.env.PROGRAMFILES && path.join(process.env.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    process.env['PROGRAMFILES(X86)'] && path.join(process.env['PROGRAMFILES(X86)'], 'Google', 'Chrome', 'Application', 'chrome.exe')
+].filter(Boolean);
 
-// puppeteer options
+const executablePath = chromeCandidates.find(candidate => fs.existsSync(candidate));
+
+if (!executablePath) {
+    throw new Error('Chrome was not found. Set PUPPETEER_EXECUTABLE_PATH to a Chrome executable.');
+}
+
 const opts = {
-    devtools: true, // Opens browser dev tools when headless is false
+    executablePath,
     headless: true,
-    slowMo: 0,
-    timeout: 10000,
+    timeout: 30000,
     args: [
-        // Something about headless mode makes the application/json call trip off a CORS request.
-        // A headed browser may convert all content-types to one of the allowed values
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Examples_of_access_control_scenarios
-        // Configuring the request to respond to the preflight OPTIONS should also have worked, but this
-        // workaround is far easier and faster
-        '--disable-web-security',
-        // Using sandbox triggers this error when calling browser.newPage(): 
-        // [0809/104946.906735:FATAL:gpu_data_manager_impl_private.cc(1034)] The display compositor is frequently crashing. Goodbye.
-        // This causes the call to hang and block the tests from running.
-        // Disabling sandbox in a testing context shouldn't cause any security concerns
-        '--no-sandbox'
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
     ]
 };
 
-let authenticationAttempts = 0;
-module.exports = async function () {
-    browser = await puppeteer.launch(opts);
-    page = await browser.newPage();
-    // Allowing puppeteer access to the request - needed for mocks
-    await page.setRequestInterception(true);
+const corsHeaders = {
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Origin': '*'
+};
 
-    // Setup mocks
-    await page.on('request', request => {
-        if (request.url().includes(`https://${mocks.server}/apiv1`)) {
-            // Post requests are normal xhr/call methods
-            let payload = '';
-            if (request.method() === 'POST') {
-                let body = parseRequest(request.postData());
-                switch (body.method) {
-                    case 'Authenticate':
-                        // Alternate the credential response to test forget()
-                        if (authenticationAttempts % 2 === 0) {
-                            payload = { result: mocks.credentials };
-                            authenticationAttempts++;
-                        } else {
-                            payload = { result: mocks.refreshedCredentials };
-                            authenticationAttempts++;
-                        }
-                        break;
-                    case 'Get':
-                        switch (body.params.typeName) {
-                            case 'Device':
-                                payload = { result: [mocks.device] };
-                                break;
-                            case 'User':
-                                payload = { result: [mocks.user] };
-                                break;
-                        }
-                        break;
-                    case 'Geet':
-                        // Poorly formed request tests
-                        payload = {
-                            error: {
-                                code: -32000,
-                                name: "JSONRPCError",
-                                message: "The method 'Geet' could not be found. Verify the method name and ensure all method parameters are included.",
-                                data: {
-                                    type: "MissingMethodException",
-                                    id: "ee15868e-6d47-41de-bafc-b20c1ca95152",
-                                    requestIndex: 0
-                                }
-                            }
-                        }
-                        break;
-                    case 'ExecuteMultiCall':
-                        // Looping each of the calls
-                        body.params.calls.forEach(call => {
-                            switch (call.method) {
-                                case 'GetCountOf':
-                                    // Stripped down to basics for ease of testing
-                                    payload = { result: [2000, 2001] };
-                                    break;
-                            }
-                        })
-                        break;
-                }
-                request.respond({
-                    content: 'application/json',
-                    headers: { 'Access-Control-Allow-Origin': '*' },
-                    body: JSON.stringify(payload)
-                });
+const respond = (request, payload, status = 200) => request.respond({
+    status,
+    contentType: 'application/json',
+    headers: corsHeaders,
+    body: JSON.stringify(payload)
+});
+
+let authenticationAttempts = 0;
+
+const getPayload = body => {
+    switch (body.method) {
+        case 'Authenticate': {
+            const payload = authenticationAttempts % 2 === 0 ? mocks.credentials : mocks.refreshedCredentials;
+            authenticationAttempts++;
+            return { result: payload };
+        }
+        case 'Get':
+            switch (body.params.typeName) {
+                case 'Device':
+                    return { result: [mocks.device] };
+                case 'User':
+                    return { result: [mocks.user] };
+                default:
+                    return { result: [] };
             }
-        } else if (request.url().includes('badinfo')) {
-            payload = {
+        case 'Geet':
+            return {
                 error: {
                     code: -32000,
-                    name: "JSONRPCError",
-                    message: "Incorrect login credentials",
+                    name: 'JSONRPCError',
+                    message: "The method 'Geet' could not be found. Verify the method name and ensure all method parameters are included.",
                     data: {
-                        type: "InvalidUserException",
-                        id: "0b508b9e-7b94-4d38-b72f-8629119f73a3",
+                        type: 'MissingMethodException',
+                        id: 'ee15868e-6d47-41de-bafc-b20c1ca95152',
                         requestIndex: 0
                     }
                 }
-            }
+            };
+        case 'ExecuteMultiCall':
+            return { result: [2000, 2001] };
+        default:
+            return { result: null };
+    }
+};
 
-            request.respond({
-                content: 'application/json',
-                headers: { 'Access-Control-Allow-Origin': '*' },
-                body: JSON.stringify(payload)
-            });
-        } else {
-            request.continue();
-        }
-    });
-    await page.goto('http://localhost:9000/test/web/');
-    // es6 destructuring
-    return [browser, page];
-}
+module.exports = async function () {
+    const browser = await puppeteer.launch(opts);
+
+    try {
+        const page = await browser.newPage();
+        await page.setRequestInterception(true);
+
+        page.on('request', async request => {
+            try {
+                const isApiRequest = request.url().includes(`https://${mocks.server}/apiv1`);
+                const isInvalidCredentialRequest = request.url().includes('badinfo');
+
+                if (!isApiRequest && !isInvalidCredentialRequest) {
+                    await request.continue();
+                    return;
+                }
+
+                if (request.method() === 'OPTIONS') {
+                    await respond(request, null, 204);
+                    return;
+                }
+
+                if (request.method() !== 'POST') {
+                    await respond(request, { error: 'Method not allowed' }, 405);
+                    return;
+                }
+
+                if (isInvalidCredentialRequest) {
+                    await respond(request, {
+                        error: {
+                            code: -32000,
+                            name: 'JSONRPCError',
+                            message: 'Incorrect login credentials',
+                            data: {
+                                type: 'InvalidUserException',
+                                id: '0b508b9e-7b94-4d38-b72f-8629119f73a3',
+                                requestIndex: 0
+                            }
+                        }
+                    });
+                    return;
+                }
+
+                await respond(request, getPayload(JSON.parse(request.postData())));
+            } catch (error) {
+                if (!request.isInterceptResolutionHandled()) {
+                    await request.abort('failed');
+                }
+                console.error('Failed to handle intercepted request', error);
+            }
+        });
+
+        await page.goto('http://localhost:9000/test/web/', { waitUntil: 'domcontentloaded' });
+        return [browser, page];
+    } catch (error) {
+        await browser.close();
+        throw error;
+    }
+};

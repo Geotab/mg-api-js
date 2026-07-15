@@ -14,19 +14,13 @@ $ npm install --save mg-api-js
 
 ### Browser
 
-To access the wrapper in the browser, the library needs to be loaded in. This can be done by downloading `api.min.js` and referencing the file as needed. 
-
-Alternatively, this can be done using jsdelivr CDN:
+To use the wrapper in a browser, download `dist/api.min.js` from a release or load an exact version from jsDelivr:
 
 ```html
-<!-- This will grab the most up to date version of the api wrapper -->
-<script src="https://cdn.jsdelivr.net/npm/mg-api-js"></script>
-
-<!-- This will grab the specified version of the api wrapper -->
-<script src="https://cdn.jsdelivr.net/npm/mg-api-js@2.0.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/mg-api-js@3.0.2/dist/api.min.js"></script>
 ```
 
-For more options using jsdelivr, visit the [jsdelivr documentation](https://www.jsdelivr.com/features).
+Pin both the package version and file path in production. An unversioned CDN URL can change when a new release is published, so upgrades should be reviewed and deployed deliberately. For other URL formats, see the [jsDelivr documentation](https://www.jsdelivr.com/features).
 
 ## Creating the Object
 **Note**: *As of v2.0.0, the GeotabApi object no longer accepts an authentication callback.*
@@ -65,7 +59,6 @@ const authentication = {
     credentials: {
         database: 'database',
         userName: 'username',
-        password: 'password',
         sessionId: '123456...'
     },
     path: 'serverAddress'
@@ -81,9 +74,9 @@ This optional parameter allows you to define some default behavior of the api:
 
 | Argument | Type | Description | Default |
 | --- | --- | --- | --- |
-| rememberMe | *boolean* | Determines whether or not to store the credentials/session in the datastore | `true` |
-| timeout | *number* | The length of time the wrapper will wait for a response from the server (in seconds) | `3` |
-| newCredentialStore | *object* | Overrides the default datastore for remembered credentials/sessions | `false` |
+| rememberMe | *boolean* | Determines whether authenticated credentials are persisted in the credential store | `true` |
+| timeout | *number* | The length of time the wrapper will wait for a response from the server (in seconds) | `180` |
+| newCredentialStore | *object* | Uses a custom synchronous credential store instead of the default store | `false` |
 | fullResponse | *boolean* | Removes error handling and provides the full [Http Server Response](https://nodejs.org/api/http.html#class-httpserverresponse) when in a node environment or the full [Fetch Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) when in a browser environment. More information in the **Full Response** section | `false` |
 
 Example options object: 
@@ -98,16 +91,57 @@ const options = {
 }
 ```
 
-#### Providing your own Datastore
+#### Credential persistence and threat model
 
-By default, the wrapper will use [localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) in browsers, and a [LocalStorageMock](https://github.com/Geotab/mg-api-js/blob/master/lib/LocalStorageMock.js) in node.
+With the default `rememberMe: true`, browsers store the authenticated credential object as plaintext JSON in same-origin [localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). This normally contains a session ID, user name, and database; if you provide a session credential object containing other secrets, those values are stored too. The Node.js default is an in-memory `LocalStorageMock` and does not persist across processes.
 
-If you want to override this behavior, you can provide an instance of a datastore object in the options object when constructing the wrapper.
+A stored session ID is a bearer credential. Any script executing on the same origin can read it, including code introduced through cross-site scripting (XSS) or a compromised third-party dependency. Browser extensions, shared browser profiles, and local device access may also expose it. Applications using the default store should apply normal XSS and dependency-supply-chain defenses.
 
-At minimum, the datastore must have the following methods:
-- `get()`
-- `set()`
-- `clear()`
+Use `rememberMe: false` when persistent browser sessions are not required or the application cannot accept this risk. This prevents newly authenticated credentials from being written, but it does **not** remove credentials saved by an earlier instance. Clear the custom store during logout or migration. When using the default browser store, remove the `geotabAPI_credentials` and `geotabAPI_server` localStorage entries.
+
+`api.forget()` is a session-refresh helper, not a logout operation: it clears the store, immediately authenticates again, and can persist the replacement session when `rememberMe` is enabled.
+
+#### Providing a custom credential store
+
+The supported `newCredentialStore` option accepts a synchronous object with this interface:
+
+- `get()` returns `false`, `null`, or `{ credentials, server }`.
+- `set(credentials, server)` stores the supplied credential object and server name.
+- `clear()` removes the stored values.
+
+For example, this memory-only store shares credentials between API instances without writing them to `localStorage`:
+
+```javascript
+class MemoryCredentialStore {
+    constructor() {
+        this.value = false;
+    }
+
+    get() {
+        return this.value;
+    }
+
+    set(credentials, server) {
+        this.value = { credentials, server };
+    }
+
+    clear() {
+        this.value = false;
+    }
+}
+
+const credentialStore = new MemoryCredentialStore();
+const options = {
+    rememberMe: true,
+    newCredentialStore: credentialStore
+};
+
+const api = new GeotabApi(authentication, options);
+// On logout, discard the API instance and clear the application-owned store.
+credentialStore.clear();
+```
+
+A custom store can integrate with an application-controlled credential broker or provide memory-only behavior. Encryption whose key is available to the same page JavaScript does not protect credentials from malicious same-origin scripts, because those scripts can invoke the store or read credentials after retrieval.
 
 ## Methods
 
