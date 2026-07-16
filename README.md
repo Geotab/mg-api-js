@@ -17,7 +17,7 @@ $ npm install --save mg-api-js
 To use the wrapper in a browser, download `dist/api.min.js` from a release or load an exact version from jsDelivr:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/mg-api-js@3.0.2/dist/api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mg-api-js@3.0.3/dist/api.min.js"></script>
 ```
 
 Pin both the package version and file path in production. An unversioned CDN URL can change when a new release is published, so upgrades should be reviewed and deployed deliberately. For other URL formats, see the [jsDelivr documentation](https://www.jsdelivr.com/features).
