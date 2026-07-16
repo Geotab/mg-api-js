@@ -68,3 +68,4 @@ lib/LocalStorageMock.js            → In-memory localStorage replacement for No
 - API endpoint format: `https://{server}/apiv1/`.
 - CI runs Node.js tests on 18, 20, and 22, plus browser tests on Node.js 22.
 - The publish workflow builds and runs both Node.js and browser tests on Node.js 24 before publishing.
+- The `uuid` override intentionally supplies a patched release to webpack-dev-server 5's `sockjs` dependency; retain it until the development server no longer depends on `sockjs`.
